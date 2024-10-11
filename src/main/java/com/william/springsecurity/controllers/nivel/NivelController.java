@@ -1,4 +1,4 @@
-package com.william.springsecurity.controllers.funcoes;
+package com.william.springsecurity.controllers.nivel;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -20,41 +20,40 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.william.springsecurity.repositories.funcoes.FuncoesRepository;
-import com.william.springsecurity.domain.funcoes.Funcoes;;
+import com.william.springsecurity.repositories.nivel.NivelRepository;
+import com.william.springsecurity.domain.nivel.Nivel;
 
 @RestController
-public class FuncoesController {
-
+public class NivelController {
     @Autowired
-	private FuncoesRepository funcoesRepository;
+	private NivelRepository nivelRepository;
 
-    @GetMapping("/funcoes")
-	  public ResponseEntity<List<Funcoes>> getAllFuncoes(
+    @GetMapping("/nivel")
+	  public ResponseEntity<List<Nivel>> getAllNivel(
 	        @RequestParam(required = false, name="nome_like") String title,
 	        @RequestParam(defaultValue = "1", name="_page") int page,
 	        @RequestParam(defaultValue = "3", name="_limit") int size
 	      ) {
 
 	    try {
-	      List<Funcoes> funcoes = new ArrayList<Funcoes>();
+	      List<Nivel> nivel = new ArrayList<Nivel>();
 	      Pageable paging = PageRequest.of((page-1), size);
 	      
-	      Page<Funcoes> pageTuts;
+	      Page<Nivel> pageTuts;
 	      if (title == null) {
-	        pageTuts = funcoesRepository.findAll(paging);
+	        pageTuts = nivelRepository.findAll(paging);
 	      }else {
-	    	    List<Funcoes> allCustomers = funcoesRepository.findByNameContaining(title);
+	    	    List<Nivel> allCustomers = nivelRepository.findByNameContaining(title);
 			    int start = (int) paging.getOffset();
 			    int end = Math.min((start + paging.getPageSize()), allCustomers.size());
 
-			    List<Funcoes> pageContent = allCustomers.subList(start, end);
+			    List<Nivel> pageContent = allCustomers.subList(start, end);
 
 	        pageTuts = new PageImpl<>(pageContent, paging, allCustomers.size());;
 	      }
-	      funcoes = pageTuts.getContent();
+	      nivel = pageTuts.getContent();
 
-	      List<Funcoes> response = funcoes;
+	      List<Nivel> response = nivel;
 
 	      return new ResponseEntity<>(response, HttpStatus.OK);
 	    } catch (Exception e) {
@@ -62,58 +61,58 @@ public class FuncoesController {
 	    }
 	  }
 	 
-	    @RequestMapping(value = "/funcoes/{id}", method = RequestMethod.GET)
+	    @RequestMapping(value = "/nivel/{id}", method = RequestMethod.GET)
 	    @ResponseBody
-	    public  ResponseEntity<Funcoes> funcoesById(@PathVariable String id) {
+	    public  ResponseEntity<Nivel> nivelById(@PathVariable String id) {
 	    
 	    try {
-			Funcoes funcoes = funcoesRepository.findById(Long.parseLong(id)).get();
+			Nivel nivel = nivelRepository.findById(Long.parseLong(id)).get();
 					    	
-	    	return new ResponseEntity<Funcoes>(funcoes, HttpStatus.OK);
+	    	return new ResponseEntity<Nivel>(nivel, HttpStatus.OK);
 	    } catch (Exception e) {
 		      return new ResponseEntity<>(null, HttpStatus.INTERNAL_SERVER_ERROR);
 		}
 	    
 	    }
 	    
-	    @PostMapping(value = "funcoes") //mapeia a url
+	    @PostMapping(value = "nivel") //mapeia a url
 	    @ResponseBody //descrição da resposta
-	    public ResponseEntity<Funcoes> salvar(@RequestBody Funcoes funcoes) { //Reebe os dados para salvar
+	    public ResponseEntity<Nivel> salvar(@RequestBody Nivel nivel) { //Reebe os dados para salvar
 	    try {
-	    	Funcoes chamado = funcoesRepository.save(funcoes);
+	    	Nivel chamado = nivelRepository.save(nivel);
 	    	
-	    	return new ResponseEntity<Funcoes>(chamado, HttpStatus.CREATED);
+	    	return new ResponseEntity<Nivel>(chamado, HttpStatus.CREATED);
 	    } catch (Exception e) {
 		      return new ResponseEntity<>(null, HttpStatus.INTERNAL_SERVER_ERROR);
 		}
 	     
 	    }
 	    
-	    @RequestMapping(value = "/funcoes/{id}", method = RequestMethod.PUT)
+	    @RequestMapping(value = "/nivel/{id}", method = RequestMethod.PUT)
 	    @ResponseBody
-	    public  ResponseEntity<?> funcoesUpdateById(@PathVariable String id, @RequestBody Funcoes funcoes) {
+	    public  ResponseEntity<?> nivelUpdateById(@PathVariable String id, @RequestBody Nivel nivel) {
 	    
 	    try {
 	    	
-	    	if(funcoes.getId() == null) {
+	    	if(nivel.getId() == null) {
 	    		return new ResponseEntity<String>("Id não foi informado para atualização.", HttpStatus.OK);
 	    	}
 	    	
-			Funcoes chamado = funcoesRepository.saveAndFlush(funcoes);
+			Nivel chamado = nivelRepository.saveAndFlush(nivel);
 					    	
-	    	return new ResponseEntity<Funcoes>(chamado, HttpStatus.OK);
+	    	return new ResponseEntity<Nivel>(chamado, HttpStatus.OK);
 	    } catch (Exception e) {
 		      return new ResponseEntity<>(null, HttpStatus.INTERNAL_SERVER_ERROR);
 		}
 	    
 	    }
 	    
-	    @RequestMapping(value = "/funcoes/{id}", method = RequestMethod.DELETE)
+	    @RequestMapping(value = "/nivel/{id}", method = RequestMethod.DELETE)
 	    @ResponseBody
-	    public  ResponseEntity<String> funcoesDeleteById(@PathVariable String id) {
+	    public  ResponseEntity<String> nivelDeleteById(@PathVariable String id) {
 	    
 	    try {
-			funcoesRepository.deleteById(Long.parseLong(id));
+			nivelRepository.deleteById(Long.parseLong(id));
 					    	
 	    	return new ResponseEntity<String>("User deletado com sucesso", HttpStatus.OK);
 	    } catch (Exception e) {

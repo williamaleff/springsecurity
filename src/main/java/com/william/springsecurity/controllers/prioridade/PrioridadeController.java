@@ -1,4 +1,4 @@
-package com.william.springsecurity.controllers.funcoes;
+package com.william.springsecurity.controllers.prioridade;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -20,41 +20,40 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.william.springsecurity.repositories.funcoes.FuncoesRepository;
-import com.william.springsecurity.domain.funcoes.Funcoes;;
+import com.william.springsecurity.repositories.prioridade.PrioridadeRepository;
+import com.william.springsecurity.domain.prioridade.Prioridade;;
 
 @RestController
-public class FuncoesController {
-
+public class PrioridadeController {
     @Autowired
-	private FuncoesRepository funcoesRepository;
+	private PrioridadeRepository prioridadeRepository;
 
-    @GetMapping("/funcoes")
-	  public ResponseEntity<List<Funcoes>> getAllFuncoes(
+    @GetMapping("/prioridade")
+	  public ResponseEntity<List<Prioridade>> getAllPrioridade(
 	        @RequestParam(required = false, name="nome_like") String title,
 	        @RequestParam(defaultValue = "1", name="_page") int page,
 	        @RequestParam(defaultValue = "3", name="_limit") int size
 	      ) {
 
 	    try {
-	      List<Funcoes> funcoes = new ArrayList<Funcoes>();
+	      List<Prioridade> prioridade = new ArrayList<Prioridade>();
 	      Pageable paging = PageRequest.of((page-1), size);
 	      
-	      Page<Funcoes> pageTuts;
+	      Page<Prioridade> pageTuts;
 	      if (title == null) {
-	        pageTuts = funcoesRepository.findAll(paging);
+	        pageTuts = prioridadeRepository.findAll(paging);
 	      }else {
-	    	    List<Funcoes> allCustomers = funcoesRepository.findByNameContaining(title);
+	    	    List<Prioridade> allCustomers = prioridadeRepository.findByNameContaining(title);
 			    int start = (int) paging.getOffset();
 			    int end = Math.min((start + paging.getPageSize()), allCustomers.size());
 
-			    List<Funcoes> pageContent = allCustomers.subList(start, end);
+			    List<Prioridade> pageContent = allCustomers.subList(start, end);
 
 	        pageTuts = new PageImpl<>(pageContent, paging, allCustomers.size());;
 	      }
-	      funcoes = pageTuts.getContent();
+	      prioridade = pageTuts.getContent();
 
-	      List<Funcoes> response = funcoes;
+	      List<Prioridade> response = prioridade;
 
 	      return new ResponseEntity<>(response, HttpStatus.OK);
 	    } catch (Exception e) {
@@ -62,58 +61,58 @@ public class FuncoesController {
 	    }
 	  }
 	 
-	    @RequestMapping(value = "/funcoes/{id}", method = RequestMethod.GET)
+	    @RequestMapping(value = "/prioridade/{id}", method = RequestMethod.GET)
 	    @ResponseBody
-	    public  ResponseEntity<Funcoes> funcoesById(@PathVariable String id) {
+	    public  ResponseEntity<Prioridade> prioridadeById(@PathVariable String id) {
 	    
 	    try {
-			Funcoes funcoes = funcoesRepository.findById(Long.parseLong(id)).get();
+			Prioridade prioridade = prioridadeRepository.findById(Long.parseLong(id)).get();
 					    	
-	    	return new ResponseEntity<Funcoes>(funcoes, HttpStatus.OK);
+	    	return new ResponseEntity<Prioridade>(prioridade, HttpStatus.OK);
 	    } catch (Exception e) {
 		      return new ResponseEntity<>(null, HttpStatus.INTERNAL_SERVER_ERROR);
 		}
 	    
 	    }
 	    
-	    @PostMapping(value = "funcoes") //mapeia a url
+	    @PostMapping(value = "prioridade") //mapeia a url
 	    @ResponseBody //descrição da resposta
-	    public ResponseEntity<Funcoes> salvar(@RequestBody Funcoes funcoes) { //Reebe os dados para salvar
+	    public ResponseEntity<Prioridade> salvar(@RequestBody Prioridade prioridade) { //Reebe os dados para salvar
 	    try {
-	    	Funcoes chamado = funcoesRepository.save(funcoes);
+	    	Prioridade chamado = prioridadeRepository.save(prioridade);
 	    	
-	    	return new ResponseEntity<Funcoes>(chamado, HttpStatus.CREATED);
+	    	return new ResponseEntity<Prioridade>(chamado, HttpStatus.CREATED);
 	    } catch (Exception e) {
 		      return new ResponseEntity<>(null, HttpStatus.INTERNAL_SERVER_ERROR);
 		}
 	     
 	    }
 	    
-	    @RequestMapping(value = "/funcoes/{id}", method = RequestMethod.PUT)
+	    @RequestMapping(value = "/prioridade/{id}", method = RequestMethod.PUT)
 	    @ResponseBody
-	    public  ResponseEntity<?> funcoesUpdateById(@PathVariable String id, @RequestBody Funcoes funcoes) {
+	    public  ResponseEntity<?> prioridadeUpdateById(@PathVariable String id, @RequestBody Prioridade prioridade) {
 	    
 	    try {
 	    	
-	    	if(funcoes.getId() == null) {
+	    	if(prioridade.getId() == null) {
 	    		return new ResponseEntity<String>("Id não foi informado para atualização.", HttpStatus.OK);
 	    	}
 	    	
-			Funcoes chamado = funcoesRepository.saveAndFlush(funcoes);
+			Prioridade chamado = prioridadeRepository.saveAndFlush(prioridade);
 					    	
-	    	return new ResponseEntity<Funcoes>(chamado, HttpStatus.OK);
+	    	return new ResponseEntity<Prioridade>(chamado, HttpStatus.OK);
 	    } catch (Exception e) {
 		      return new ResponseEntity<>(null, HttpStatus.INTERNAL_SERVER_ERROR);
 		}
 	    
 	    }
 	    
-	    @RequestMapping(value = "/funcoes/{id}", method = RequestMethod.DELETE)
+	    @RequestMapping(value = "/prioridade/{id}", method = RequestMethod.DELETE)
 	    @ResponseBody
-	    public  ResponseEntity<String> funcoesDeleteById(@PathVariable String id) {
+	    public  ResponseEntity<String> prioridadeDeleteById(@PathVariable String id) {
 	    
 	    try {
-			funcoesRepository.deleteById(Long.parseLong(id));
+			prioridadeRepository.deleteById(Long.parseLong(id));
 					    	
 	    	return new ResponseEntity<String>("User deletado com sucesso", HttpStatus.OK);
 	    } catch (Exception e) {

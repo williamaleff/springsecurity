@@ -1,4 +1,4 @@
-package com.william.springsecurity.controllers.funcoes;
+package com.william.springsecurity.controllers.status;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -20,41 +20,40 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.william.springsecurity.repositories.funcoes.FuncoesRepository;
-import com.william.springsecurity.domain.funcoes.Funcoes;;
+import com.william.springsecurity.repositories.status.StatusRepository;
+import com.william.springsecurity.domain.status.Status;;
 
 @RestController
-public class FuncoesController {
-
+public class StatusController {
     @Autowired
-	private FuncoesRepository funcoesRepository;
+	private StatusRepository statusRepository;
 
-    @GetMapping("/funcoes")
-	  public ResponseEntity<List<Funcoes>> getAllFuncoes(
+    @GetMapping("/status")
+	  public ResponseEntity<List<Status>> getAllStatus(
 	        @RequestParam(required = false, name="nome_like") String title,
 	        @RequestParam(defaultValue = "1", name="_page") int page,
 	        @RequestParam(defaultValue = "3", name="_limit") int size
 	      ) {
 
 	    try {
-	      List<Funcoes> funcoes = new ArrayList<Funcoes>();
+	      List<Status> status = new ArrayList<Status>();
 	      Pageable paging = PageRequest.of((page-1), size);
 	      
-	      Page<Funcoes> pageTuts;
+	      Page<Status> pageTuts;
 	      if (title == null) {
-	        pageTuts = funcoesRepository.findAll(paging);
+	        pageTuts = statusRepository.findAll(paging);
 	      }else {
-	    	    List<Funcoes> allCustomers = funcoesRepository.findByNameContaining(title);
+	    	    List<Status> allCustomers = statusRepository.findByNameContaining(title);
 			    int start = (int) paging.getOffset();
 			    int end = Math.min((start + paging.getPageSize()), allCustomers.size());
 
-			    List<Funcoes> pageContent = allCustomers.subList(start, end);
+			    List<Status> pageContent = allCustomers.subList(start, end);
 
 	        pageTuts = new PageImpl<>(pageContent, paging, allCustomers.size());;
 	      }
-	      funcoes = pageTuts.getContent();
+	      status = pageTuts.getContent();
 
-	      List<Funcoes> response = funcoes;
+	      List<Status> response = status;
 
 	      return new ResponseEntity<>(response, HttpStatus.OK);
 	    } catch (Exception e) {
@@ -62,58 +61,58 @@ public class FuncoesController {
 	    }
 	  }
 	 
-	    @RequestMapping(value = "/funcoes/{id}", method = RequestMethod.GET)
+	    @RequestMapping(value = "/status/{id}", method = RequestMethod.GET)
 	    @ResponseBody
-	    public  ResponseEntity<Funcoes> funcoesById(@PathVariable String id) {
+	    public  ResponseEntity<Status> statusById(@PathVariable String id) {
 	    
 	    try {
-			Funcoes funcoes = funcoesRepository.findById(Long.parseLong(id)).get();
+			Status status = statusRepository.findById(Long.parseLong(id)).get();
 					    	
-	    	return new ResponseEntity<Funcoes>(funcoes, HttpStatus.OK);
+	    	return new ResponseEntity<Status>(status, HttpStatus.OK);
 	    } catch (Exception e) {
 		      return new ResponseEntity<>(null, HttpStatus.INTERNAL_SERVER_ERROR);
 		}
 	    
 	    }
 	    
-	    @PostMapping(value = "funcoes") //mapeia a url
+	    @PostMapping(value = "status") //mapeia a url
 	    @ResponseBody //descrição da resposta
-	    public ResponseEntity<Funcoes> salvar(@RequestBody Funcoes funcoes) { //Reebe os dados para salvar
+	    public ResponseEntity<Status> salvar(@RequestBody Status status) { //Reebe os dados para salvar
 	    try {
-	    	Funcoes chamado = funcoesRepository.save(funcoes);
+	    	Status chamado = statusRepository.save(status);
 	    	
-	    	return new ResponseEntity<Funcoes>(chamado, HttpStatus.CREATED);
+	    	return new ResponseEntity<Status>(chamado, HttpStatus.CREATED);
 	    } catch (Exception e) {
 		      return new ResponseEntity<>(null, HttpStatus.INTERNAL_SERVER_ERROR);
 		}
 	     
 	    }
 	    
-	    @RequestMapping(value = "/funcoes/{id}", method = RequestMethod.PUT)
+	    @RequestMapping(value = "/status/{id}", method = RequestMethod.PUT)
 	    @ResponseBody
-	    public  ResponseEntity<?> funcoesUpdateById(@PathVariable String id, @RequestBody Funcoes funcoes) {
+	    public  ResponseEntity<?> statusUpdateById(@PathVariable String id, @RequestBody Status status) {
 	    
 	    try {
 	    	
-	    	if(funcoes.getId() == null) {
+	    	if(status.getId() == null) {
 	    		return new ResponseEntity<String>("Id não foi informado para atualização.", HttpStatus.OK);
 	    	}
 	    	
-			Funcoes chamado = funcoesRepository.saveAndFlush(funcoes);
+			Status chamado = statusRepository.saveAndFlush(status);
 					    	
-	    	return new ResponseEntity<Funcoes>(chamado, HttpStatus.OK);
+	    	return new ResponseEntity<Status>(chamado, HttpStatus.OK);
 	    } catch (Exception e) {
 		      return new ResponseEntity<>(null, HttpStatus.INTERNAL_SERVER_ERROR);
 		}
 	    
 	    }
 	    
-	    @RequestMapping(value = "/funcoes/{id}", method = RequestMethod.DELETE)
+	    @RequestMapping(value = "/status/{id}", method = RequestMethod.DELETE)
 	    @ResponseBody
-	    public  ResponseEntity<String> funcoesDeleteById(@PathVariable String id) {
+	    public  ResponseEntity<String> statusDeleteById(@PathVariable String id) {
 	    
 	    try {
-			funcoesRepository.deleteById(Long.parseLong(id));
+			statusRepository.deleteById(Long.parseLong(id));
 					    	
 	    	return new ResponseEntity<String>("User deletado com sucesso", HttpStatus.OK);
 	    } catch (Exception e) {

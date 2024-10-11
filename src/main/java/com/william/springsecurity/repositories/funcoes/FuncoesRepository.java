@@ -7,7 +7,7 @@ import org.springframework.stereotype.Repository;
 
 import com.william.springsecurity.domain.funcoes.Funcoes;
 
-
+ 
 @Repository
 public interface FuncoesRepository extends JpaRepository<Funcoes, Long> {
 

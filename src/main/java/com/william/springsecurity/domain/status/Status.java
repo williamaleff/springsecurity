@@ -1,16 +1,16 @@
-package com.william.springsecurity.domain.funcoes;
+package com.william.springsecurity.domain.status;
 
 import java.io.Serializable;
 import jakarta.persistence.*;
  
 @Entity
-@SequenceGenerator(name = "seq_funcoes", sequenceName = "seq_funcoes", allocationSize = 1, initialValue = 1)
-public class Funcoes implements Serializable {
+@SequenceGenerator(name = "seq_status", sequenceName = "seq_status", allocationSize = 1, initialValue = 1)
+public class Status implements Serializable {
 	
 	private static final long serialVersionUID = 1L;
 	
 	@Id
-	@GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "seq_funcoes")
+	@GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "seq_status")
 	private Long id;
 	
 	private String nome;

@@ -1,4 +1,4 @@
-package com.william.springsecurity.controllers.funcoes;
+package com.william.springsecurity.controllers.cliente;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -20,41 +20,41 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.william.springsecurity.repositories.funcoes.FuncoesRepository;
-import com.william.springsecurity.domain.funcoes.Funcoes;;
+import com.william.springsecurity.repositories.cliente.ClienteRepository;
+import com.william.springsecurity.domain.cliente.Cliente;;
 
 @RestController
-public class FuncoesController {
-
+public class ClienteController {
+  
     @Autowired
-	private FuncoesRepository funcoesRepository;
+	private ClienteRepository clienteRepository;
 
-    @GetMapping("/funcoes")
-	  public ResponseEntity<List<Funcoes>> getAllFuncoes(
+    @GetMapping("/cliente")
+	  public ResponseEntity<List<Cliente>> getAllCliente(
 	        @RequestParam(required = false, name="nome_like") String title,
 	        @RequestParam(defaultValue = "1", name="_page") int page,
 	        @RequestParam(defaultValue = "3", name="_limit") int size
 	      ) {
 
 	    try {
-	      List<Funcoes> funcoes = new ArrayList<Funcoes>();
+	      List<Cliente> cliente = new ArrayList<Cliente>();
 	      Pageable paging = PageRequest.of((page-1), size);
 	      
-	      Page<Funcoes> pageTuts;
+	      Page<Cliente> pageTuts;
 	      if (title == null) {
-	        pageTuts = funcoesRepository.findAll(paging);
+	        pageTuts = clienteRepository.findAll(paging);
 	      }else {
-	    	    List<Funcoes> allCustomers = funcoesRepository.findByNameContaining(title);
+	    	    List<Cliente> allCustomers = clienteRepository.findByNameContaining(title);
 			    int start = (int) paging.getOffset();
 			    int end = Math.min((start + paging.getPageSize()), allCustomers.size());
 
-			    List<Funcoes> pageContent = allCustomers.subList(start, end);
+			    List<Cliente> pageContent = allCustomers.subList(start, end);
 
 	        pageTuts = new PageImpl<>(pageContent, paging, allCustomers.size());;
 	      }
-	      funcoes = pageTuts.getContent();
+	      cliente = pageTuts.getContent();
 
-	      List<Funcoes> response = funcoes;
+	      List<Cliente> response = cliente;
 
 	      return new ResponseEntity<>(response, HttpStatus.OK);
 	    } catch (Exception e) {
@@ -62,58 +62,58 @@ public class FuncoesController {
 	    }
 	  }
 	 
-	    @RequestMapping(value = "/funcoes/{id}", method = RequestMethod.GET)
+	    @RequestMapping(value = "/cliente/{id}", method = RequestMethod.GET)
 	    @ResponseBody
-	    public  ResponseEntity<Funcoes> funcoesById(@PathVariable String id) {
+	    public  ResponseEntity<Cliente> clienteById(@PathVariable String id) {
 	    
 	    try {
-			Funcoes funcoes = funcoesRepository.findById(Long.parseLong(id)).get();
+			Cliente cliente = clienteRepository.findById(Long.parseLong(id)).get();
 					    	
-	    	return new ResponseEntity<Funcoes>(funcoes, HttpStatus.OK);
+	    	return new ResponseEntity<Cliente>(cliente, HttpStatus.OK);
 	    } catch (Exception e) {
 		      return new ResponseEntity<>(null, HttpStatus.INTERNAL_SERVER_ERROR);
 		}
 	    
 	    }
 	    
-	    @PostMapping(value = "funcoes") //mapeia a url
+	    @PostMapping(value = "cliente") //mapeia a url
 	    @ResponseBody //descrição da resposta
-	    public ResponseEntity<Funcoes> salvar(@RequestBody Funcoes funcoes) { //Reebe os dados para salvar
+	    public ResponseEntity<Cliente> salvar(@RequestBody Cliente cliente) { //Reebe os dados para salvar
 	    try {
-	    	Funcoes chamado = funcoesRepository.save(funcoes);
+	    	Cliente chamado = clienteRepository.save(cliente);
 	    	
-	    	return new ResponseEntity<Funcoes>(chamado, HttpStatus.CREATED);
+	    	return new ResponseEntity<Cliente>(chamado, HttpStatus.CREATED);
 	    } catch (Exception e) {
 		      return new ResponseEntity<>(null, HttpStatus.INTERNAL_SERVER_ERROR);
 		}
-	     
+	    
 	    }
 	    
-	    @RequestMapping(value = "/funcoes/{id}", method = RequestMethod.PUT)
+	    @RequestMapping(value = "/cliente/{id}", method = RequestMethod.PUT)
 	    @ResponseBody
-	    public  ResponseEntity<?> funcoesUpdateById(@PathVariable String id, @RequestBody Funcoes funcoes) {
+	    public  ResponseEntity<?> clienteUpdateById(@PathVariable String id, @RequestBody Cliente cliente) {
 	    
 	    try {
 	    	
-	    	if(funcoes.getId() == null) {
+	    	if(cliente.getId() == null) {
 	    		return new ResponseEntity<String>("Id não foi informado para atualização.", HttpStatus.OK);
 	    	}
 	    	
-			Funcoes chamado = funcoesRepository.saveAndFlush(funcoes);
+			Cliente chamado = clienteRepository.saveAndFlush(cliente);
 					    	
-	    	return new ResponseEntity<Funcoes>(chamado, HttpStatus.OK);
+	    	return new ResponseEntity<Cliente>(chamado, HttpStatus.OK);
 	    } catch (Exception e) {
 		      return new ResponseEntity<>(null, HttpStatus.INTERNAL_SERVER_ERROR);
 		}
 	    
 	    }
 	    
-	    @RequestMapping(value = "/funcoes/{id}", method = RequestMethod.DELETE)
+	    @RequestMapping(value = "/cliente/{id}", method = RequestMethod.DELETE)
 	    @ResponseBody
-	    public  ResponseEntity<String> funcoesDeleteById(@PathVariable String id) {
+	    public  ResponseEntity<String> clienteDeleteById(@PathVariable String id) {
 	    
 	    try {
-			funcoesRepository.deleteById(Long.parseLong(id));
+			clienteRepository.deleteById(Long.parseLong(id));
 					    	
 	    	return new ResponseEntity<String>("User deletado com sucesso", HttpStatus.OK);
 	    } catch (Exception e) {

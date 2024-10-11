@@ -1,4 +1,4 @@
-package com.william.springsecurity.controllers.funcoes;
+package com.william.springsecurity.controllers.historico;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -20,41 +20,40 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.william.springsecurity.repositories.funcoes.FuncoesRepository;
-import com.william.springsecurity.domain.funcoes.Funcoes;;
+import com.william.springsecurity.repositories.historico.HistoricoRepository;
+import com.william.springsecurity.domain.historico.Historico;;
 
 @RestController
-public class FuncoesController {
-
+public class HistoricoController {
     @Autowired
-	private FuncoesRepository funcoesRepository;
+	private HistoricoRepository historicoRepository;
 
-    @GetMapping("/funcoes")
-	  public ResponseEntity<List<Funcoes>> getAllFuncoes(
+    @GetMapping("/historico")
+	  public ResponseEntity<List<Historico>> getAllHistorico(
 	        @RequestParam(required = false, name="nome_like") String title,
 	        @RequestParam(defaultValue = "1", name="_page") int page,
 	        @RequestParam(defaultValue = "3", name="_limit") int size
 	      ) {
 
 	    try {
-	      List<Funcoes> funcoes = new ArrayList<Funcoes>();
+	      List<Historico> historico = new ArrayList<Historico>();
 	      Pageable paging = PageRequest.of((page-1), size);
 	      
-	      Page<Funcoes> pageTuts;
+	      Page<Historico> pageTuts;
 	      if (title == null) {
-	        pageTuts = funcoesRepository.findAll(paging);
+	        pageTuts = historicoRepository.findAll(paging);
 	      }else {
-	    	    List<Funcoes> allCustomers = funcoesRepository.findByNameContaining(title);
+	    	    List<Historico> allCustomers = historicoRepository.findByNameContaining(title);
 			    int start = (int) paging.getOffset();
 			    int end = Math.min((start + paging.getPageSize()), allCustomers.size());
 
-			    List<Funcoes> pageContent = allCustomers.subList(start, end);
+			    List<Historico> pageContent = allCustomers.subList(start, end);
 
 	        pageTuts = new PageImpl<>(pageContent, paging, allCustomers.size());;
 	      }
-	      funcoes = pageTuts.getContent();
+	      historico = pageTuts.getContent();
 
-	      List<Funcoes> response = funcoes;
+	      List<Historico> response = historico;
 
 	      return new ResponseEntity<>(response, HttpStatus.OK);
 	    } catch (Exception e) {
@@ -62,58 +61,58 @@ public class FuncoesController {
 	    }
 	  }
 	 
-	    @RequestMapping(value = "/funcoes/{id}", method = RequestMethod.GET)
+	    @RequestMapping(value = "/historico/{id}", method = RequestMethod.GET)
 	    @ResponseBody
-	    public  ResponseEntity<Funcoes> funcoesById(@PathVariable String id) {
+	    public  ResponseEntity<Historico> historicoById(@PathVariable String id) {
 	    
 	    try {
-			Funcoes funcoes = funcoesRepository.findById(Long.parseLong(id)).get();
+			Historico historico = historicoRepository.findById(Long.parseLong(id)).get();
 					    	
-	    	return new ResponseEntity<Funcoes>(funcoes, HttpStatus.OK);
+	    	return new ResponseEntity<Historico>(historico, HttpStatus.OK);
 	    } catch (Exception e) {
 		      return new ResponseEntity<>(null, HttpStatus.INTERNAL_SERVER_ERROR);
 		}
 	    
 	    }
 	    
-	    @PostMapping(value = "funcoes") //mapeia a url
+	    @PostMapping(value = "historico") //mapeia a url
 	    @ResponseBody //descrição da resposta
-	    public ResponseEntity<Funcoes> salvar(@RequestBody Funcoes funcoes) { //Reebe os dados para salvar
+	    public ResponseEntity<Historico> salvar(@RequestBody Historico historico) { //Reebe os dados para salvar
 	    try {
-	    	Funcoes chamado = funcoesRepository.save(funcoes);
+	    	Historico chamado = historicoRepository.save(historico);
 	    	
-	    	return new ResponseEntity<Funcoes>(chamado, HttpStatus.CREATED);
+	    	return new ResponseEntity<Historico>(chamado, HttpStatus.CREATED);
 	    } catch (Exception e) {
 		      return new ResponseEntity<>(null, HttpStatus.INTERNAL_SERVER_ERROR);
 		}
 	     
 	    }
 	    
-	    @RequestMapping(value = "/funcoes/{id}", method = RequestMethod.PUT)
+	    @RequestMapping(value = "/historico/{id}", method = RequestMethod.PUT)
 	    @ResponseBody
-	    public  ResponseEntity<?> funcoesUpdateById(@PathVariable String id, @RequestBody Funcoes funcoes) {
+	    public  ResponseEntity<?> historicoUpdateById(@PathVariable String id, @RequestBody Historico historico) {
 	    
 	    try {
 	    	
-	    	if(funcoes.getId() == null) {
+	    	if(historico.getId() == null) {
 	    		return new ResponseEntity<String>("Id não foi informado para atualização.", HttpStatus.OK);
 	    	}
 	    	
-			Funcoes chamado = funcoesRepository.saveAndFlush(funcoes);
+			Historico chamado = historicoRepository.saveAndFlush(historico);
 					    	
-	    	return new ResponseEntity<Funcoes>(chamado, HttpStatus.OK);
+	    	return new ResponseEntity<Historico>(chamado, HttpStatus.OK);
 	    } catch (Exception e) {
 		      return new ResponseEntity<>(null, HttpStatus.INTERNAL_SERVER_ERROR);
 		}
 	    
 	    }
 	    
-	    @RequestMapping(value = "/funcoes/{id}", method = RequestMethod.DELETE)
+	    @RequestMapping(value = "/historico/{id}", method = RequestMethod.DELETE)
 	    @ResponseBody
-	    public  ResponseEntity<String> funcoesDeleteById(@PathVariable String id) {
+	    public  ResponseEntity<String> historicoDeleteById(@PathVariable String id) {
 	    
 	    try {
-			funcoesRepository.deleteById(Long.parseLong(id));
+			historicoRepository.deleteById(Long.parseLong(id));
 					    	
 	    	return new ResponseEntity<String>("User deletado com sucesso", HttpStatus.OK);
 	    } catch (Exception e) {
@@ -121,6 +120,5 @@ public class FuncoesController {
 		}
 	    
 	    }
-
 	
 }

@@ -1,11 +1,11 @@
-package com.william.springsecurity.domain.funcoes;
+package com.william.springsecurity.domain.nivel;
 
 import java.io.Serializable;
 import jakarta.persistence.*;
  
 @Entity
 @SequenceGenerator(name = "seq_funcoes", sequenceName = "seq_funcoes", allocationSize = 1, initialValue = 1)
-public class Funcoes implements Serializable {
+public class Nivel implements Serializable {
 	
 	private static final long serialVersionUID = 1L;
 	
