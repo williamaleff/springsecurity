@@ -8,6 +8,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -21,6 +22,7 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.william.springsecurity.repositories.agente.AgenteRepository;
+import com.william.springsecurity.services.AgenteService;
 import com.william.springsecurity.domain.agente.Agente;;
 
 @RestController
@@ -28,6 +30,9 @@ public class AgenteController {
   
     @Autowired
 	private AgenteRepository agenteRepository;
+
+	@Autowired
+	private AgenteService agenteService;
 
     @GetMapping("/agente")
 	  public ResponseEntity<List<Agente>> getAllAgente(
@@ -41,14 +46,19 @@ public class AgenteController {
 	      Pageable paging = PageRequest.of((page-1), size);
 	      
 	      Page<Agente> pageTuts;
+		  HttpHeaders headers = new HttpHeaders();
+
 	      if (title == null) {
 	        pageTuts = agenteRepository.findAll(paging);
+			headers.add("x-total-count", String.valueOf(agenteService.getTotalCount()) );
+  
 	      }else {
 	    	    List<Agente> allCustomers = agenteRepository.findByNameContaining(title);
 			    int start = (int) paging.getOffset();
 			    int end = Math.min((start + paging.getPageSize()), allCustomers.size());
 
 			    List<Agente> pageContent = allCustomers.subList(start, end);
+				headers.add("x-total-count", String.valueOf(allCustomers.size()) );
 
 	        pageTuts = new PageImpl<>(pageContent, paging, allCustomers.size());;
 	      }
@@ -56,9 +66,9 @@ public class AgenteController {
 
 	      List<Agente> response = agente;
 
-	      return new ResponseEntity<>(response, HttpStatus.OK);
+	      return new ResponseEntity<>(response, headers,HttpStatus.OK);
 	    } catch (Exception e) {
-	      return new ResponseEntity<>(null, HttpStatus.INTERNAL_SERVER_ERROR);
+	      return new ResponseEntity<>(null, null, HttpStatus.INTERNAL_SERVER_ERROR);
 	    }
 	  }
 	 
@@ -71,7 +81,7 @@ public class AgenteController {
 					    	
 	    	return new ResponseEntity<Agente>(agente, HttpStatus.OK);
 	    } catch (Exception e) {
-		      return new ResponseEntity<>(null, HttpStatus.INTERNAL_SERVER_ERROR);
+		      return new ResponseEntity<>(null, null, HttpStatus.INTERNAL_SERVER_ERROR);
 		}
 	    
 	    }
@@ -84,7 +94,7 @@ public class AgenteController {
 	    	
 	    	return new ResponseEntity<Agente>(chamado, HttpStatus.CREATED);
 	    } catch (Exception e) {
-		      return new ResponseEntity<>(null, HttpStatus.INTERNAL_SERVER_ERROR);
+		      return new ResponseEntity<>(null, null, HttpStatus.INTERNAL_SERVER_ERROR);
 		}
 	    
 	    }
@@ -103,7 +113,7 @@ public class AgenteController {
 					    	
 	    	return new ResponseEntity<Agente>(chamado, HttpStatus.OK);
 	    } catch (Exception e) {
-		      return new ResponseEntity<>(null, HttpStatus.INTERNAL_SERVER_ERROR);
+		      return new ResponseEntity<>(null, null, HttpStatus.INTERNAL_SERVER_ERROR);
 		}
 	    
 	    }
@@ -117,7 +127,7 @@ public class AgenteController {
 					    	
 	    	return new ResponseEntity<String>("User deletado com sucesso", HttpStatus.OK);
 	    } catch (Exception e) {
-		      return new ResponseEntity<>(null, HttpStatus.INTERNAL_SERVER_ERROR);
+		      return new ResponseEntity<>(null, null, HttpStatus.INTERNAL_SERVER_ERROR);
 		}
 	    
 	    }

@@ -8,6 +8,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -21,6 +22,7 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.william.springsecurity.repositories.comentario.ComentarioRepository;
+import com.william.springsecurity.services.ComentarioService;
 import com.william.springsecurity.domain.comentario.Comentario;;
 
 @RestController
@@ -28,6 +30,9 @@ public class ComentarioController {
 
     @Autowired
 	private ComentarioRepository comentarioRepository;
+
+	@Autowired
+	private ComentarioService comentarioService;
 
     @GetMapping("/comentario")
 	  public ResponseEntity<List<Comentario>> getAllComentario(
@@ -41,8 +46,12 @@ public class ComentarioController {
 	      Pageable paging = PageRequest.of((page-1), size);
 	      
 	      Page<Comentario> pageTuts;
+		  HttpHeaders headers = new HttpHeaders();
+
 	      if (title == null) {
 	        pageTuts = comentarioRepository.findAll(paging);
+			headers.add("x-total-count", String.valueOf(comentarioService.getTotalCount()) );
+  
 	      }else {
 	    	    List<Comentario> allCustomers = comentarioRepository.findByNameContaining(title);
 			    int start = (int) paging.getOffset();
@@ -56,9 +65,9 @@ public class ComentarioController {
 
 	      List<Comentario> response = comentario;
 
-	      return new ResponseEntity<>(response, HttpStatus.OK);
+	      return new ResponseEntity<>(response, headers, HttpStatus.OK);
 	    } catch (Exception e) {
-	      return new ResponseEntity<>(null, HttpStatus.INTERNAL_SERVER_ERROR);
+	      return new ResponseEntity<>(null, null, HttpStatus.INTERNAL_SERVER_ERROR);
 	    }
 	  }
 	 
@@ -71,7 +80,7 @@ public class ComentarioController {
 					    	
 	    	return new ResponseEntity<Comentario>(comentario, HttpStatus.OK);
 	    } catch (Exception e) {
-		      return new ResponseEntity<>(null, HttpStatus.INTERNAL_SERVER_ERROR);
+		      return new ResponseEntity<>(null, null, HttpStatus.INTERNAL_SERVER_ERROR);
 		}
 	    
 	    }
@@ -84,7 +93,7 @@ public class ComentarioController {
 	    	
 	    	return new ResponseEntity<Comentario>(chamado, HttpStatus.CREATED);
 	    } catch (Exception e) {
-		      return new ResponseEntity<>(null, HttpStatus.INTERNAL_SERVER_ERROR);
+		      return new ResponseEntity<>(null, null, HttpStatus.INTERNAL_SERVER_ERROR);
 		}
 	    
 	    }
@@ -103,7 +112,7 @@ public class ComentarioController {
 					    	
 	    	return new ResponseEntity<Comentario>(chamado, HttpStatus.OK);
 	    } catch (Exception e) {
-		      return new ResponseEntity<>(null, HttpStatus.INTERNAL_SERVER_ERROR);
+		      return new ResponseEntity<>(null, null, HttpStatus.INTERNAL_SERVER_ERROR);
 		}
 	    
 	    }
@@ -117,7 +126,7 @@ public class ComentarioController {
 					    	
 	    	return new ResponseEntity<String>("User deletado com sucesso", HttpStatus.OK);
 	    } catch (Exception e) {
-		      return new ResponseEntity<>(null, HttpStatus.INTERNAL_SERVER_ERROR);
+		      return new ResponseEntity<>(null, null, HttpStatus.INTERNAL_SERVER_ERROR);
 		}
 	    
 	    }

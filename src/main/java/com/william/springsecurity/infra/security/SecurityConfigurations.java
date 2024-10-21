@@ -43,6 +43,7 @@ public class SecurityConfigurations {
                     corsConfig.setAllowedOrigins(Collections.singletonList("http://localhost:5173")); // substitua pelo(s) domínio(s) permitido(s)
                     corsConfig.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS"));
                     corsConfig.setAllowedHeaders(Arrays.asList("*"));
+                    corsConfig.setExposedHeaders(Arrays.asList("x-total-count")); 
                     corsConfig.setAllowCredentials(true);
                     return corsConfig;
                 }))
