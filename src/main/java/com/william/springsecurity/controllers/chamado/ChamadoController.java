@@ -37,21 +37,33 @@ public class ChamadoController {
     @GetMapping("/chamado")
 	  public ResponseEntity<List<Chamado>> getAllChamado(
 	        @RequestParam(required = false, name="nome_like") String title,
-	        @RequestParam(defaultValue = "1", name="_page") int page,
+	        @RequestParam(defaultValue = "0", name="_page") int page,
 	        @RequestParam(defaultValue = "3", name="_limit") int size
 	      ) {
 
 	    try {
+				
 	      List<Chamado> chamado = new ArrayList<Chamado>();
-	      Pageable paging = PageRequest.of((page-1), size);
-	      
-	      Page<Chamado> pageTuts;
 		  HttpHeaders headers = new HttpHeaders();
+
+		  if (page == 0) {
+            if (title == null) {
+                chamado = chamadoRepository.findAll();
+                headers.add("x-total-count", String.valueOf(chamado.size()));
+            } else {
+                chamado = chamadoRepository.findByNameContaining(title);
+                headers.add("x-total-count", String.valueOf(chamado.size()));
+            }
+            return new ResponseEntity<>(chamado, headers, HttpStatus.OK);
+        }
+
+	      Pageable paging = PageRequest.of((page-1), size);
+	      Page<Chamado> pageTuts;
 
 	      if (title == null) {
 	        pageTuts = chamadoRepository.findAll(paging);
 			headers.add("x-total-count", String.valueOf(chamadoService.getTotalCount()) );
-  
+
 	      }else {
 	    	    List<Chamado> allCustomers = chamadoRepository.findByNameContaining(title);
 			    int start = (int) paging.getOffset();
@@ -127,6 +139,42 @@ public class ChamadoController {
 	    }
 	  }
 	 
+	  @GetMapping("/data")
+	  public ResponseEntity<List<Chamado>> getAllData(
+	        @RequestParam(required = false, name="nome_like") String title,
+	        @RequestParam(defaultValue = "1", name="_page") int page,
+	        @RequestParam(defaultValue = "3", name="_limit") int size,
+	        @RequestParam(name="data_like") String data1,
+	        @RequestParam(name="data_like2") String data2
+	      ) {
+			try {
+				
+				List<Chamado> chamado = new ArrayList<Chamado>();
+				HttpHeaders headers = new HttpHeaders();
+
+				Pageable paging = PageRequest.of((page-1), size);
+				Page<Chamado> pageTuts;	  
+
+				List<Chamado> allCustomers = chamadoRepository.findByPeriod(data1, data2);
+				int start = (int) paging.getOffset();
+				int end = Math.min((start + paging.getPageSize()), allCustomers.size());
+	
+				List<Chamado> pageContent = allCustomers.subList(start, end);
+				headers.add("x-total-count", String.valueOf(allCustomers.size()) );
+		
+				pageTuts = new PageImpl<>(pageContent, paging, allCustomers.size());;
+				chamado = pageTuts.getContent();
+
+			    List<Chamado> response = chamado;
+
+				return new ResponseEntity<>(response, headers, HttpStatus.OK);
+			} catch (Exception e) {
+			  return new ResponseEntity<>(null, null, HttpStatus.INTERNAL_SERVER_ERROR);
+			}
+		  
+		  }
+
+
 	    @RequestMapping(value = "/chamado/{id}", method = RequestMethod.GET)
 	    @ResponseBody
 	    public  ResponseEntity<Chamado> chamadoById(@PathVariable String id) {

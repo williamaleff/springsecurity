@@ -53,7 +53,6 @@ public class TiposController {
 						headers.add("x-total-count", String.valueOf(tiposService.getTotalCount()) );
 
 					}else {
-				    	  
 				    	    List<Tipos> allCustomers = tiposRepository.findByNameContaining(title);
 						    int start = (int) paging.getOffset();
 						    int end = Math.min((start + paging.getPageSize()), allCustomers.size());
@@ -68,7 +67,7 @@ public class TiposController {
 
 				      List<Tipos> response = tipos;
 				      
-				      return new ResponseEntity<>(response, HttpStatus.OK);
+				      return new ResponseEntity<>(response, headers, HttpStatus.OK);
 				    } catch (Exception e) {
 				      return new ResponseEntity<>(null, null, HttpStatus.INTERNAL_SERVER_ERROR);
 				    }
