@@ -84,60 +84,6 @@ public class ChamadoController {
 	      return new ResponseEntity<>(null, null, HttpStatus.INTERNAL_SERVER_ERROR);
 	    }
 	  }
-
-	  @GetMapping("/data")
-	  public ResponseEntity<List<Chamado>> getDate(
-	        @RequestParam(required = false, name="data_like") String title,
-	        @RequestParam(required = false, name="data_like2") String title2,
-	        @RequestParam(defaultValue = "1", name="_page") int page,
-	        @RequestParam(defaultValue = "3", name="_limit") int size
-	      ) {
-
-	    try {
-	      List<Chamado> chamado = new ArrayList<Chamado>();
-	      Pageable paging = PageRequest.of((page-1), size);
-	      
-	      Page<Chamado> pageTuts;
-		  HttpHeaders headers = new HttpHeaders();
-
-	      if (title == null && title2 == null) {
-	        pageTuts = chamadoRepository.findAll(paging);
-			headers.add("x-total-count", String.valueOf(chamadoService.getTotalCount()) );
-  
-	      }else{
-			if(title != null && title2 == null){
-				List<Chamado> allCustomersData = chamadoRepository.findByDateContaining(title);
-				int start = (int) paging.getOffset();
-			    int end = Math.min((start + paging.getPageSize()), allCustomersData.size());
-
-			    List<Chamado> pageContent = allCustomersData.subList(start, end);
-				headers.add("x-total-count", String.valueOf(allCustomersData.size()) );
-
-
-	        	pageTuts = new PageImpl<>(pageContent, paging, allCustomersData.size());
-
-			} else {
-	    	    List<Chamado> allCustomers = chamadoRepository.findByPeriodoContaining(title, title2);
-			
-				int start = (int) paging.getOffset();
-			    int end = Math.min((start + paging.getPageSize()), allCustomers.size());
-
-			    List<Chamado> pageContent = allCustomers.subList(start, end);
-				headers.add("x-total-count", String.valueOf(allCustomers.size()) );
-
-
-	        	pageTuts = new PageImpl<>(pageContent, paging, allCustomers.size());
-			}
-	      }
-	      chamado = pageTuts.getContent();
-
-	      List<Chamado> response = chamado;
-
-	      return new ResponseEntity<>(response, headers, HttpStatus.OK);
-	    } catch (Exception e) {
-	      return new ResponseEntity<>(null, null, HttpStatus.INTERNAL_SERVER_ERROR);
-	    }
-	  }
 	 
 	  @GetMapping("/data")
 	  public ResponseEntity<List<Chamado>> getAllData(
