@@ -12,17 +12,19 @@ public class Chamado implements Serializable {
 	@Id
 	@GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "seq_chamado")
 	
-    private Long id;
-	
+    private Long id;	
 	private String descricao;
     private String chamadoGlpi;
     private String dataCriacao;
+    private String horarioCriacao;
     private String tipoId;
     private String clienteId;
     private String statusId;
     private String prioridadeId;
     private String dataAtualizacao;
+    private String horarioAtualizacao;
     private String dataFechamento;
+    private String horarioFechamento;
     private String agenteId;
     private String anexo;
 
@@ -121,5 +123,30 @@ public class Chamado implements Serializable {
     public void setAnexo(String anexo) {
         this.anexo = anexo;
     }
+
+    public String getHorarioCriacao() {
+        return horarioCriacao;
+    }
+
+    public void setHorarioCriacao(String horarioCriacao) {
+        this.horarioCriacao = horarioCriacao;
+    }
+
+    public String getHorarioAtualizacao() {
+        return horarioAtualizacao;
+    }
+
+    public void setHorarioAtualizacao(String horarioAtualizacao) {
+        this.horarioAtualizacao = horarioAtualizacao;
+    }
+
+    public String getHorarioFechamento() {
+        return horarioFechamento;
+    }
+
+    public void setHorarioFechamento(String horarioFechamento) {
+        this.horarioFechamento = horarioFechamento;
+    }
+
 	
 }
