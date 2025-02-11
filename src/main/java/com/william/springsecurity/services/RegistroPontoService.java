@@ -16,6 +16,8 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+import java.time.Duration;
+
 @Service
 public class RegistroPontoService {
 
@@ -69,4 +71,37 @@ public class RegistroPontoService {
         return registros.stream()
                 .collect(Collectors.groupingBy(RegistroPonto::getFuncionarioId));
     }
+
+    // Novo método para calcular as horas trabalhadas de um funcionário em um mês
+    public String calcularHorasTrabalhadasFuncionarioMes(Long funcionarioId, int ano, int mes) {
+        // Define o intervalo do mês
+        LocalDate inicio = LocalDate.of(ano, mes, 1);
+        LocalDate fim = inicio.with(TemporalAdjusters.lastDayOfMonth());
+        
+        // Busca os registros do funcionário no período
+        List<RegistroPonto> registros = registroPontoRepository.findByFuncionarioIdAndDiaBetween(funcionarioId, inicio, fim);
+        
+        // Soma as horas trabalhadas (considerando que o método getHorasTrabalhadas() retorna um objeto Duration ou null)
+        Duration total = Duration.ZERO;
+        for (RegistroPonto registro : registros) {
+            Duration duracao = registro.getHorasTrabalhadas();
+            if (duracao != null) {
+                total = total.plus(duracao);
+            }
+        }
+        
+        // Formata a duração em HH:mm:ss
+        long hours = total.toHours();
+        long minutes = total.minusHours(hours).toMinutes();
+        long seconds = total.minusHours(hours).minusMinutes(minutes).getSeconds();
+        
+        return String.format("%02d:%02d:%02d", hours, minutes, seconds);
+    }
+
+    public List<RegistroPonto> listarRegistrosPorFuncionarioMes(Long funcionarioId, int ano, int mes) {
+        LocalDate inicio = LocalDate.of(ano, mes, 1);
+        LocalDate fim = inicio.with(TemporalAdjusters.lastDayOfMonth());
+        return registroPontoRepository.findByFuncionarioIdAndDiaBetween(funcionarioId, inicio, fim);
+    }
+    
 }

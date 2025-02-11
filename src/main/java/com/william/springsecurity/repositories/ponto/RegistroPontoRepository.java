@@ -14,4 +14,7 @@ public interface RegistroPontoRepository extends JpaRepository<RegistroPonto, Lo
     // Novo método para buscar registros entre duas datas
     List<RegistroPonto> findByDiaBetween(LocalDate inicio, LocalDate fim);
 
+    // Novo método para filtrar por funcionário e intervalo de datas
+    List<RegistroPonto> findByFuncionarioIdAndDiaBetween(Long funcionarioId, LocalDate inicio, LocalDate fim);
+
 }
