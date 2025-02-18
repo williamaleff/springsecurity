@@ -103,7 +103,7 @@ public class InternoController {
 	    	
 	    	return new ResponseEntity<Interno>(chamado, HttpStatus.CREATED);
 	    } catch (Exception e) {
-		      return new ResponseEntity<>(null, null, HttpStatus.INTERNAL_SERVER_ERROR);
+		    return new ResponseEntity<>(null, null, HttpStatus.INTERNAL_SERVER_ERROR);
 		}
 	    
 	    }

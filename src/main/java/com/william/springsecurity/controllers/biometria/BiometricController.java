@@ -1,8 +1,13 @@
 package com.william.springsecurity.controllers.biometria;
 
 import com.nitgen.SDK.BSP.NBioBSPJNI;
+import com.william.springsecurity.controllers.ponto.RegistroPontoResponseDTO;
 import com.william.springsecurity.domain.biometria.dto.FingerprintRequest;
 import com.william.springsecurity.domain.biometria.dto.FingerprintResponse;
+import com.william.springsecurity.domain.interno.Interno;
+import com.william.springsecurity.domain.ponto.RegistroPonto;
+import com.william.springsecurity.repositories.interno.InternoRepository;
+import com.william.springsecurity.services.RegistroPontoService;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -14,6 +19,8 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.HashMap;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api")
@@ -22,8 +29,14 @@ public class BiometricController {
     @Autowired
     private DataSource dataSource;
 
+    @Autowired
+    private RegistroPontoService registroPontoService;
+
+     @Autowired
+    private InternoRepository internoRepository;
+
     @PostMapping("/verifyFingerprint")
-    public ResponseEntity<FingerprintResponse> verifyFingerprint(@RequestBody FingerprintRequest request) {
+    public ResponseEntity<?> verifyFingerprint(@RequestBody FingerprintRequest request) {
         FingerprintResponse response = new FingerprintResponse();
         NBioBSPJNI bsp = new NBioBSPJNI();
 
@@ -48,6 +61,8 @@ public class BiometricController {
                  PreparedStatement ps = conn.prepareStatement("SELECT id, nome, digital FROM interno")) {
 
                 ResultSet rs = ps.executeQuery();
+                int funcionarioId = 0;
+
                 while (rs.next()) {
                     int userId = rs.getInt("id");
                     String nome = rs.getString("nome");
@@ -68,11 +83,26 @@ public class BiometricController {
 
                     // Verifica se a digital foi encontrada
                         if (bResult) {
-                            response.setFound(true);
-                            response.setId(userId);
-                            response.setNome(nome);
-                            response.setMessage("Digital encontrada");
-                        return ResponseEntity.ok(response);
+                            funcionarioId = userId;
+                            
+                            Interno interno = internoRepository.findById((long) funcionarioId)
+                            .orElse(null);
+
+                            if (interno == null) {
+                                String msg = "Funcionário não encontrado no repositório";
+                                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(msg);
+                            }
+
+                            RegistroPonto registroAtualizado = registroPontoService.registrarPonto((long) funcionarioId);
+                            RegistroPontoResponseDTO responseDTO = RegistroPontoResponseDTO.from(registroAtualizado);
+
+                            // Cria uma resposta composta incluindo dados do registro e do interno
+                           Map<String, Object> responseMap = new HashMap<>();
+                           responseMap.put("registroPonto", responseDTO);
+                           responseMap.put("nome", interno.getNome());
+                           responseMap.put("foto", interno.getFoto());
+
+                           return ResponseEntity.ok(responseMap);
                         }
                 }
             } catch (SQLException ex) {

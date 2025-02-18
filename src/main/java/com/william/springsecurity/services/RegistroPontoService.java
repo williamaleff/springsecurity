@@ -5,7 +5,9 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
+import com.william.springsecurity.domain.interno.Interno;
 import com.william.springsecurity.domain.ponto.RegistroPonto;
+import com.william.springsecurity.repositories.interno.InternoRepository;
 import com.william.springsecurity.repositories.ponto.RegistroPontoRepository;
 
 import java.time.LocalDate;
@@ -24,10 +26,22 @@ public class RegistroPontoService {
     @Autowired
     private RegistroPontoRepository registroPontoRepository;
 
-    public void registrarPonto(Long funcionarioId) {
+    @Autowired
+    private InternoRepository internoRepository;
+
+    public RegistroPonto registrarPonto(Long funcionarioId) {
         LocalDate hoje = LocalDate.now();
-        Optional<RegistroPonto> registroOpt = registroPontoRepository.findByFuncionarioIdAndDia(funcionarioId, hoje);
-        RegistroPonto registro = registroOpt.orElseGet(() -> new RegistroPonto(funcionarioId, hoje));
+         Optional<RegistroPonto> registroOpt = registroPontoRepository.findByFuncionarioIdAndDia(funcionarioId, hoje);
+    RegistroPonto registro = registroOpt.orElseGet(() -> {
+        // Busca o Interno correspondente
+        Interno interno = internoRepository.findById(funcionarioId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Funcionário não encontrado"));
+        
+        // Cria o novo registro com o Interno associado
+        RegistroPonto novoRegistro = new RegistroPonto(funcionarioId, hoje);
+        novoRegistro.setInterno(interno);
+        return novoRegistro;
+    });
 
         // Verifica se todos os 4 horários já foram preenchidos.
         if (registro.getEntrada() != null &&
@@ -48,7 +62,7 @@ public class RegistroPontoService {
             registro.setSaida(LocalTime.now());
         }
 
-        registroPontoRepository.save(registro);
+        return registroPontoRepository.save(registro);
     }
 
     // Novo método para listar registros agrupados por funcionarioId

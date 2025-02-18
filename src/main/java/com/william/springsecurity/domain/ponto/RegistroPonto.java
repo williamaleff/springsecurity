@@ -6,6 +6,8 @@ import java.time.Duration;
 import java.time.LocalDate;
 import java.time.LocalTime;
 
+import com.william.springsecurity.domain.interno.Interno;
+
 @Entity
 @Table(name = "registro_ponto", uniqueConstraints = @UniqueConstraint(columnNames = {"funcionario_id", "dia"}))
 public class RegistroPonto {
@@ -14,9 +16,9 @@ public class RegistroPonto {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(name = "funcionario_id", nullable = false)
+    @Column(name = "funcionario_id", insertable = false, updatable = false)
     private Long funcionarioId;
-
+    
     @Column(name = "dia", nullable = false)
     private LocalDate dia;
 
@@ -42,6 +44,20 @@ public class RegistroPonto {
 
     @Column(name = "observacao")
     private String observacao;
+
+    @ManyToOne(optional = false)
+    @JoinColumn(name = "funcionario_id", nullable = false)
+    private Interno interno;
+
+    // Getter para Interno
+    public Interno getInterno() {
+        return interno;
+    }
+
+    // Setter para Interno (se necessário)
+    public void setInterno(Interno interno) {
+        this.interno = interno;
+    }
 
     // Construtor padrão
     public RegistroPonto() {}

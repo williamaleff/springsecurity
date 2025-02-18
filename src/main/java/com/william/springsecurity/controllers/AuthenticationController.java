@@ -37,9 +37,10 @@ public class AuthenticationController {
         var usernamePassword = new UsernamePasswordAuthenticationToken(data.login(), data.password());
         var auth = this.authenticationManager.authenticate(usernamePassword);
 
-        var token = tokenService.generateToken((User) auth.getPrincipal());
+        var user = (User) auth.getPrincipal();
+        var token = tokenService.generateToken(user);
 
-        return ResponseEntity.ok(new LoginResponseDTO(token));
+        return ResponseEntity.ok(new LoginResponseDTO(token, user.getUsername(), user.getRole()));
         }catch(AuthenticationException e){
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(null);
         }
@@ -47,6 +48,7 @@ public class AuthenticationController {
 
     @PostMapping("/register")
     public ResponseEntity<?> register(@RequestBody @Valid RegisterDTO data){
+        try{
         if(this.repository.findByLogin(data.login()) != null) return ResponseEntity.badRequest().build();
 
         String encryptedPassword = new BCryptPasswordEncoder().encode(data.password());
@@ -54,6 +56,10 @@ public class AuthenticationController {
 
         this.repository.save(newUser);
 
-        return ResponseEntity.ok().build();
+            return new ResponseEntity<User>(newUser, HttpStatus.CREATED);
+        } catch(Exception e) {
+            return new ResponseEntity<>(null, null, HttpStatus.INTERNAL_SERVER_ERROR);
+	
+        }
     }
 }
