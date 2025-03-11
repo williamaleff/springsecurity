@@ -116,7 +116,18 @@ public class BiometricController {
             response.setMessage("Digital não cadastrada");
             return ResponseEntity.ok(response);
 
-        } catch (Exception e) {
+        } catch (IllegalArgumentException e) {
+            // Se o erro for devido à restrição de 10 minutos, retorna BAD_REQUEST (400)
+            if ("Registro não permitido. Aguarde 10 minutos antes de registrar novamente.".equals(e.getMessage())) {
+                response.setFound(false);
+                response.setMessage(e.getMessage());
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
+            }
+            response.setFound(false);
+            response.setMessage("Erro: " + e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
+
+        }  catch (Exception e) {
             response.setFound(false);
             response.setMessage("Erro: " + e.getMessage());
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);

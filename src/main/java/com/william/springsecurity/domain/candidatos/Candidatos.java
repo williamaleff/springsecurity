@@ -19,6 +19,33 @@ public class Candidatos {
     private String tipoDeRegime;
     private String funcao;
     private LocalDateTime dataDaAtualizacao;
+    private String biometria;
+    private String trabalha;
+    private String trabalhou;
+    
+    public String getBiometria() {
+        return biometria;
+    }
+
+    public void setBiometria(String biometria) {
+        this.biometria = biometria;
+    }
+
+    public String getTrabalha() {
+        return trabalha;
+    }
+
+    public void setTrabalha(String trabalha) {
+        this.trabalha = trabalha;
+    }
+
+    public String getTrabalhou() {
+        return trabalhou;
+    }
+
+    public void setTrabalhou(String trabalhou) {
+        this.trabalhou = trabalhou;
+    }
 
     public Candidatos() {
     }

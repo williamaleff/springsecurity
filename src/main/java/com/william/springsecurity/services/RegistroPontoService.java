@@ -1,9 +1,7 @@
 package com.william.springsecurity.services;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
-import org.springframework.web.server.ResponseStatusException;
 
 import com.william.springsecurity.domain.interno.Interno;
 import com.william.springsecurity.domain.ponto.RegistroPonto;
@@ -13,57 +11,87 @@ import com.william.springsecurity.repositories.ponto.RegistroPontoRepository;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.time.temporal.TemporalAdjusters;
+import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
-
+import java.util.stream.Stream;
 import java.time.Duration;
 
 @Service
 public class RegistroPontoService {
 
     @Autowired
-    private RegistroPontoRepository registroPontoRepository;
+private RegistroPontoRepository registroPontoRepository;
 
-    @Autowired
-    private InternoRepository internoRepository;
+@Autowired
+private InternoRepository internoRepository;
 
-    public RegistroPonto registrarPonto(Long funcionarioId) {
-        LocalDate hoje = LocalDate.now();
-         Optional<RegistroPonto> registroOpt = registroPontoRepository.findByFuncionarioIdAndDia(funcionarioId, hoje);
-    RegistroPonto registro = registroOpt.orElseGet(() -> {
-        // Busca o Interno correspondente
-        Interno interno = internoRepository.findById(funcionarioId)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Funcionário não encontrado"));
-        
-        // Cria o novo registro com o Interno associado
-        RegistroPonto novoRegistro = new RegistroPonto(funcionarioId, hoje);
-        novoRegistro.setInterno(interno);
-        return novoRegistro;
-    });
+public RegistroPonto registrarPonto(Long funcionarioId) {
+    // Verifica se o funcionário (Interno) existe
+    Interno interno = internoRepository.findById(funcionarioId)
+            .orElseThrow(() -> new IllegalArgumentException("Funcionário não encontrado"));
 
-        // Verifica se todos os 4 horários já foram preenchidos.
-        if (registro.getEntrada() != null &&
-            registro.getSaidaAlmoco() != null &&
-            registro.getRetornoAlmoco() != null &&
-            registro.getSaida() != null) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "O funcionário já bateu o ponto 4 vezes hoje.");
+    LocalDate hoje = LocalDate.now();
+    LocalTime agora = LocalTime.now();
+
+    // Buscar o último registro de ponto do funcionário no dia
+    Optional<RegistroPonto> ultimoRegistroOpt = registroPontoRepository.findByFuncionarioIdAndDia(funcionarioId, hoje);
+    if (ultimoRegistroOpt.isPresent()) {
+        RegistroPonto ultimoRegistro = ultimoRegistroOpt.get();
+        // Determinar o último horário registrado (entre os 4 possíveis)
+        LocalTime ultimoHorario = Stream.of(
+                ultimoRegistro.getEntrada(),
+                ultimoRegistro.getSaidaAlmoco(),
+                ultimoRegistro.getRetornoAlmoco(),
+                ultimoRegistro.getSaida()
+        ).filter(Objects::nonNull)
+         .max(Comparator.naturalOrder())
+         .orElse(null);
+
+        // Se o último horário foi registrado há menos de 10 minutos, bloqueia o novo registro
+        if (ultimoHorario != null && Duration.between(ultimoHorario, agora).toMinutes() < 10) {
+            throw new IllegalArgumentException("Registro não permitido. Aguarde 10 minutos antes de registrar novamente.");
         }
-
-        // Registra o próximo horário disponível, seguindo a ordem:
-        if (registro.getEntrada() == null) {
-            registro.setEntrada(LocalTime.now());
-        } else if (registro.getSaidaAlmoco() == null) {
-            registro.setSaidaAlmoco(LocalTime.now());
-        } else if (registro.getRetornoAlmoco() == null) {
-            registro.setRetornoAlmoco(LocalTime.now());
-        } else if (registro.getSaida() == null) {
-            registro.setSaida(LocalTime.now());
-        }
-
-        return registroPontoRepository.save(registro);
     }
+    
+    // Cria ou atualiza o registro de ponto associando o Interno encontrado
+    return salvarOuAtualizarRegistro(funcionarioId, interno, hoje, agora);
+}
+
+public RegistroPonto salvarOuAtualizarRegistro(Long funcionarioId, Interno interno, LocalDate data, LocalTime horario) {
+    Optional<RegistroPonto> registroOpt = registroPontoRepository.findByFuncionarioIdAndDia(funcionarioId, data);
+    RegistroPonto registro = null; // Inicializa a variável
+
+    if (registroOpt.isPresent()) {
+        registro = registroOpt.get();
+
+        if (registro.getEntrada() == null) {
+            registro.setEntrada(horario);
+        } else if (registro.getSaidaAlmoco() == null) {
+            registro.setSaidaAlmoco(horario);
+        } else if (registro.getRetornoAlmoco() == null) {
+            registro.setRetornoAlmoco(horario);
+        } else if (registro.getSaida() == null) {
+            registro.setSaida(horario);
+        } else {
+            throw new IllegalArgumentException("Todos os pontos já foram registrados para hoje.");
+        }
+    } else {
+        registro = new RegistroPonto();
+        registro.setFuncionarioId(funcionarioId);
+        registro.setDia(data);
+        registro.setDiaSemana(data.getDayOfWeek().toString());
+        registro.setEntrada(horario); // Primeiro horário registrado do dia
+        registro.setInterno(interno);
+    }
+
+    return registroPontoRepository.save(registro);
+}
+
 
     // Novo método para listar registros agrupados por funcionarioId
     public Map<Long, List<RegistroPonto>> listarRegistrosAgrupadosPorFuncionario() {
@@ -86,36 +114,112 @@ public class RegistroPontoService {
                 .collect(Collectors.groupingBy(RegistroPonto::getFuncionarioId));
     }
 
-    // Novo método para calcular as horas trabalhadas de um funcionário em um mês
-    public String calcularHorasTrabalhadasFuncionarioMes(Long funcionarioId, int ano, int mes) {
-        // Define o intervalo do mês
-        LocalDate inicio = LocalDate.of(ano, mes, 1);
-        LocalDate fim = inicio.with(TemporalAdjusters.lastDayOfMonth());
-        
-        // Busca os registros do funcionário no período
-        List<RegistroPonto> registros = registroPontoRepository.findByFuncionarioIdAndDiaBetween(funcionarioId, inicio, fim);
-        
-        // Soma as horas trabalhadas (considerando que o método getHorasTrabalhadas() retorna um objeto Duration ou null)
-        Duration total = Duration.ZERO;
-        for (RegistroPonto registro : registros) {
-            Duration duracao = registro.getHorasTrabalhadas();
-            if (duracao != null) {
-                total = total.plus(duracao);
-            }
-        }
-        
-        // Formata a duração em HH:mm:ss
-        long hours = total.toHours();
-        long minutes = total.minusHours(hours).toMinutes();
-        long seconds = total.minusHours(hours).minusMinutes(minutes).getSeconds();
-        
-        return String.format("%02d:%02d:%02d", hours, minutes, seconds);
-    }
-
     public List<RegistroPonto> listarRegistrosPorFuncionarioMes(Long funcionarioId, int ano, int mes) {
         LocalDate inicio = LocalDate.of(ano, mes, 1);
         LocalDate fim = inicio.with(TemporalAdjusters.lastDayOfMonth());
-        return registroPontoRepository.findByFuncionarioIdAndDiaBetween(funcionarioId, inicio, fim);
+        
+        List<RegistroPonto> registros = registroPontoRepository.findByFuncionarioIdAndDiaBetween(funcionarioId, inicio, fim);
+        
+        // Atualiza o campo horasTrabalhadas de acordo com as regras:
+        for (RegistroPonto registro : registros) {
+            Duration horas = calcularHorasTrabalhadasCustom(registro);
+            registro.setHorasTrabalhadas(horas);
+        }
+        
+        return registros;
     }
+    
+    /**
+     * Calcula as horas trabalhadas para um dia, conforme:
+     * - Se houver 2 ou 3 registros: retorna a diferença entre o primeiro e o segundo registro.
+     * - Se houver 4 registros: retorna (saidaAlmoco - entrada) + (saida - retornoAlmoco).
+     */
+    private Duration calcularHorasTrabalhadasCustom(RegistroPonto registro) {
+        List<LocalTime> pontos = new ArrayList<>();
+        
+        if (registro.getEntrada() != null) {
+            pontos.add(registro.getEntrada());
+        }
+        if (registro.getSaidaAlmoco() != null) {
+            pontos.add(registro.getSaidaAlmoco());
+        }
+        if (registro.getRetornoAlmoco() != null) {
+            pontos.add(registro.getRetornoAlmoco());
+        }
+        if (registro.getSaida() != null) {
+            pontos.add(registro.getSaida());
+        }
+        
+        // Se há pelo menos 2 registros, o cálculo é válido
+        if (pontos.size() >= 2) {
+            if (pontos.size() == 2 || pontos.size() == 3) {
+                // Para 2 ou 3 batidas, consideramos somente o intervalo entre o primeiro e o segundo ponto
+                return Duration.between(pontos.get(0), pontos.get(1));
+            } else if (pontos.size() == 4) {
+                Duration periodoManha = Duration.between(pontos.get(0), pontos.get(1));
+                Duration periodoTarde = Duration.between(pontos.get(2), pontos.get(3));
+                return periodoManha.plus(periodoTarde);
+            }
+        }
+        
+        return Duration.ZERO;
+    }    
+    
+    public String calcularHorasTrabalhadasFuncionarioMes(Long funcionarioId, int ano, int mes) {
+    // Define o intervalo do mês
+    LocalDate inicio = LocalDate.of(ano, mes, 1);
+    LocalDate fim = inicio.with(TemporalAdjusters.lastDayOfMonth());
+    
+    // Busca os registros do funcionário no período
+    List<RegistroPonto> registros = registroPontoRepository.findByFuncionarioIdAndDiaBetween(funcionarioId, inicio, fim);
+    
+    // Soma as horas trabalhadas usando a lógica customizada para cada registro
+    Duration total = Duration.ZERO;
+    for (RegistroPonto registro : registros) {
+        Duration duracao = calcularHorasTrabalhadas(registro);
+        total = total.plus(duracao);
+    }
+    
+    // Formata a duração em HH:mm:ss
+    long hours = total.toHours();
+    long minutes = total.minusHours(hours).toMinutes();
+    long seconds = total.minusHours(hours).minusMinutes(minutes).getSeconds();
+    
+    return String.format("%02d:%02d:%02d", hours, minutes, seconds);
+}
+
+/**
+ * Calcula as horas trabalhadas em um dia considerando:
+ * - Se há 2 ou 3 registros: utiliza o intervalo do primeiro ao segundo registro.
+ * - Se há 4 registros: soma o intervalo (primeiro ao segundo) e (terceiro ao quarto).
+ */
+private Duration calcularHorasTrabalhadas(RegistroPonto registro) {
+    List<LocalTime> pontos = new ArrayList<>();
+    if (registro.getEntrada() != null) {
+        pontos.add(registro.getEntrada());
+    }
+    if (registro.getSaidaAlmoco() != null) {
+        pontos.add(registro.getSaidaAlmoco());
+    }
+    if (registro.getRetornoAlmoco() != null) {
+        pontos.add(registro.getRetornoAlmoco());
+    }
+    if (registro.getSaida() != null) {
+        pontos.add(registro.getSaida());
+    }
+    
+    // Se houver pelo menos 2 registros, use o intervalo do primeiro ao segundo
+    if (pontos.size() >= 2) {
+        if (pontos.size() == 2 || pontos.size() == 3) {
+            return Duration.between(pontos.get(0), pontos.get(1));
+        } else if (pontos.size() >= 4) {
+            Duration periodoManha = Duration.between(pontos.get(0), pontos.get(1));
+            Duration periodoTarde = Duration.between(pontos.get(2), pontos.get(3));
+            return periodoManha.plus(periodoTarde);
+        }
+    }
+    return Duration.ZERO;
+}
+
     
 }

@@ -1,5 +1,7 @@
 package com.william.springsecurity.domain.interno;
 import java.io.Serializable;
+import java.time.LocalDateTime;
+
 import jakarta.persistence.*;
 
 @Entity
@@ -12,14 +14,17 @@ public class Interno implements Serializable {
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "seq_interno")
     private Long id;
     private String nome;
-    private String mae;
-    private String localizacao;
-    private String regime;
-    private String funcao;
     private String prontuario;
-    private String unidade;
     private String digital;
     private String foto;
+    private LocalDateTime dataDaAtualizacao;
+    
+    public LocalDateTime getDataDaAtualizacao() {
+        return dataDaAtualizacao;
+    }
+    public void setDataDaAtualizacao(LocalDateTime dataDaAtualizacao) {
+        this.dataDaAtualizacao = dataDaAtualizacao;
+    }
     
     public Long getId() {
         return id;
@@ -33,42 +38,14 @@ public class Interno implements Serializable {
     public void setNome(String nome) {
         this.nome = nome;
     }
-    public String getMae() {
-        return mae;
-    }
-    public void setMae(String mae) {
-        this.mae = mae;
-    }
-    public String getLocalizacao() {
-        return localizacao;
-    }
-    public void setLocalizacao(String localizacao) {
-        this.localizacao = localizacao;
-    }
-    public String getRegime() {
-        return regime;
-    }
-    public void setRegime(String regime) {
-        this.regime = regime;
-    }
-    public String getFuncao() {
-        return funcao;
-    }
-    public void setFuncao(String funcao) {
-        this.funcao = funcao;
-    }
+    
     public String getProntuario() {
         return prontuario;
     }
     public void setProntuario(String prontuario) {
         this.prontuario = prontuario;
     }
-    public String getUnidade() {
-        return unidade;
-    }
-    public void setUnidade(String unidade) {
-        this.unidade = unidade;
-    }
+    
     public String getDigital() {
         return digital;
     }

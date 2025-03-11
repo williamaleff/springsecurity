@@ -132,15 +132,9 @@ public class RegistroPonto {
         this.saida = saida;
     }
 
-    // Cálculo das horas trabalhadas (caso os 4 horários estejam preenchidos)
     public Duration getHorasTrabalhadas() {
-        if (entrada != null && saidaAlmoco != null && retornoAlmoco != null && saida != null) {
-            Duration periodoManha = Duration.between(entrada, saidaAlmoco);
-            Duration periodoTarde = Duration.between(retornoAlmoco, saida);
-            return periodoManha.plus(periodoTarde);
-        }
-        return null;
-    }
+        return horasTrabalhadas;
+    }    
 
     public void setHorasTrabalhadas(Duration horasTrabalhadas) {
         this.horasTrabalhadas = horasTrabalhadas;
