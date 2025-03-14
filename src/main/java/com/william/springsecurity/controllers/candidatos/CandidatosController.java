@@ -51,7 +51,8 @@ public class CandidatosController {
                 return ResponseEntity.badRequest().body("Arquivo sem dados.");
             }
 
-            // Lê o cabeçalho e mapeia as colunas (normalizando para minúsculas e sem espaços extras)
+            // Lê o cabeçalho e mapeia as colunas (normalizando para minúsculas e sem
+            // espaços extras)
             Row headerRow = rowIterator.next();
             Map<String, Integer> columnIndexMap = new HashMap<>();
             for (Cell cell : headerRow) {
@@ -59,19 +60,22 @@ public class CandidatosController {
                 columnIndexMap.put(header, cell.getColumnIndex());
             }
 
-            // Detecta o layout: se a coluna "unidade" existir, assume-se Layout 2; senão, Layout 1.
+            // Detecta o layout: se a coluna "unidade" existir, assume-se Layout 2; senão,
+            // Layout 1.
             boolean isLayout2 = columnIndexMap.containsKey("unidade");
 
             // Validação dos cabeçalhos obrigatórios conforme o layout
             if (isLayout2) {
-                String[] requiredColumns = {"prontuário", "nome", "mãe", "unidade", "última localização", "tipo de regime"};
+                String[] requiredColumns = { "prontuário", "nome", "mãe", "unidade", "última localização",
+                        "tipo de regime" };
                 for (String col : requiredColumns) {
                     if (!columnIndexMap.containsKey(col)) {
                         return ResponseEntity.badRequest().body("Coluna obrigatória não encontrada: " + col);
                     }
                 }
             } else {
-                String[] requiredColumns = {"prontuário", "nome", "mãe", "última localização", "função/cargo", "regime"};
+                String[] requiredColumns = { "prontuário", "nome", "mãe", "última localização", "função/cargo",
+                        "regime" };
                 for (String col : requiredColumns) {
                     if (!columnIndexMap.containsKey(col)) {
                         return ResponseEntity.badRequest().body("Coluna obrigatória não encontrada: " + col);
@@ -87,7 +91,8 @@ public class CandidatosController {
                 Row row = rowIterator.next();
 
                 String prontuario = getCellValue(row.getCell(columnIndexMap.get("prontuário")));
-                // Registra o prontuário para saber que esse candidato foi atualizado na planilha
+                // Registra o prontuário para saber que esse candidato foi atualizado na
+                // planilha
                 prontuariosAtualizados.add(prontuario);
 
                 String nome = getCellValue(row.getCell(columnIndexMap.get("nome")));
@@ -97,7 +102,6 @@ public class CandidatosController {
                 String unidade;
                 String funcao;
                 String tipoDeRegime;
-                String trabalha = null;
                 String trabalhou = null;
 
                 if (isLayout2) {
@@ -110,37 +114,85 @@ public class CandidatosController {
                     unidade = "UP - SOBRAL";
                     funcao = getCellValue(row.getCell(columnIndexMap.get("função/cargo")));
                     tipoDeRegime = getCellValue(row.getCell(columnIndexMap.get("regime")));
-                    // Para Layout 1, define "trabalha" como "sim" e "trabalhou" como o mês/ano atual.
-                    trabalha = "sim";
+                    // Para Layout 1, define "trabalha" como "sim" e "trabalhou" como o mês/ano
+                    // atual.
                     trabalhou = now.format(formatter);
                 }
 
-                // O campo "biometria" não existe na planilha, portanto é sempre null.
-                String biometria = null;
-
                 Optional<Candidatos> optionalCandidato = candidatosRepository.findByProntuario(prontuario);
-                Candidatos candidato = optionalCandidato.orElseGet(Candidatos::new);
-                candidato.setProntuario(prontuario);
-                candidato.setNome(nome);
-                candidato.setMae(mae);
-                candidato.setUnidade(unidade);
-                candidato.setUltimaLocalizacao(ultimaLocalizacao);
-                candidato.setTipoDeRegime(tipoDeRegime);
-                candidato.setFuncao(funcao);
-                candidato.setBiometria(biometria);
-                candidato.setDataDaAtualizacao(now);
+                Candidatos candidato;
 
-                // Se o layout for 1, atualizamos os campos trabalha e trabalhou conforme definidos na planilha.
-                if (!isLayout2) {
-                    candidato.setTrabalha(trabalha);
-                    candidato.setTrabalhou(trabalhou);
+                if (optionalCandidato.isPresent()) {
+                    // Candidato já existe: atualizar ou manter campos conforme layout
+                    candidato = optionalCandidato.get();
+                    // Atualiza a data da atualização sempre
+                    candidato.setDataDaAtualizacao(now);
+
+                    if (isLayout2) {
+                        // Layout2: atualiza os campos informados na planilha
+                        candidato.setProntuario(prontuario);
+                        candidato.setNome(nome);
+                        candidato.setMae(mae);
+                        candidato.setUnidade(unidade);
+                        candidato.setUltimaLocalizacao(ultimaLocalizacao);
+                        candidato.setTipoDeRegime(tipoDeRegime);
+                        // Não altera biometria, trabalha, trabalhou e funcao
+                    } else {
+                        // Layout1: não altera os campos básicos se já existirem
+                        // Campos que não devem ser modificados: prontuario, nome, mae, unidade,
+                        // ultimaLocalizacao, tipoDeRegime, biometria
+                        // Sempre atualiza o campo funcao com o valor da planilha
+                        candidato.setFuncao(funcao);
+                        // Define o campo trabalha como "sim"
+                        candidato.setTrabalha("sim");
+                        // Se for novo, o campo trabalhou será setado; para os já existentes, opta-se
+                        // por não sobrescrever o valor anterior
+                        // (a atualização de quem NÃO está na planilha será feita posteriormente)
+                    }
+                } else {
+                    // Candidato não existe: cria um novo registro
+                    candidato = new Candidatos();
+                    candidato.setDataDaAtualizacao(now);
+
+                    if (isLayout2) {
+                        // Layout2: preenche os campos fornecidos pela planilha
+                        candidato.setProntuario(prontuario);
+                        candidato.setNome(nome);
+                        candidato.setMae(mae);
+                        candidato.setUnidade(unidade);
+                        candidato.setUltimaLocalizacao(ultimaLocalizacao);
+                        candidato.setTipoDeRegime(tipoDeRegime);
+                        // Os campos que a planilha não fornece são criados como null
+                        candidato.setBiometria(null);
+                        candidato.setFuncao(null);
+                        candidato.setTrabalha(null);
+                        candidato.setTrabalhou(null);
+                    } else {
+                        // Layout1: preenche com os valores da planilha para os campos básicos
+                        candidato.setProntuario(prontuario);
+                        candidato.setNome(nome);
+                        candidato.setMae(mae);
+                        candidato.setUnidade(unidade);
+                        candidato.setUltimaLocalizacao(ultimaLocalizacao);
+                        candidato.setTipoDeRegime(tipoDeRegime);
+                        // Biomatria é criado como null, pois a planilha não fornece esse dado
+                        candidato.setBiometria(null);
+                        // Sempre preenche o campo funcao com o valor da planilha
+                        candidato.setFuncao(funcao);
+                        // Define trabalha = "sim" e trabalhou com o valor atual
+                        candidato.setTrabalha("sim");
+                        candidato.setTrabalhou(trabalhou);
+                    }
                 }
 
                 candidatosRepository.save(candidato);
             }
 
-            // Agora, para os candidatos que NÃO foram atualizados via planilha, atualiza o campo "trabalha" para "nao".
-            // Se o candidato já tinha "sim", adiciona uma vírgula e o valor do mês/ano atual em "trabalhou".
+            if (!isLayout2) {
+            // Agora, para os candidatos que NÃO foram atualizados via planilha, atualiza o
+            // campo "trabalha" para "nao".
+            // Se o candidato já tinha "sim", adiciona uma vírgula e o valor do mês/ano
+            // atual em "trabalhou".
             List<Candidatos> todosCandidatos = candidatosRepository.findAll();
             for (Candidatos cand : todosCandidatos) {
                 if (!prontuariosAtualizados.contains(cand.getProntuario())) {
@@ -158,6 +210,7 @@ public class CandidatosController {
                     candidatosRepository.save(cand);
                 }
             }
+        }
         } catch (IOException e) {
             e.printStackTrace();
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Erro ao processar o arquivo.");
@@ -165,6 +218,7 @@ public class CandidatosController {
 
         return ResponseEntity.ok("Arquivo processado com sucesso");
     }
+
     /**
      * Método auxiliar para extrair o valor de uma célula do Excel.
      */
@@ -191,7 +245,7 @@ public class CandidatosController {
         }
     }
 
-     /**
+    /**
      * Endpoint para buscar um candidato pelo prontuário.
      * Exemplo de URL: GET /planilha/candidatos/12345
      */
@@ -207,41 +261,40 @@ public class CandidatosController {
 
     @GetMapping("/candidatos/oldest-data")
     public ResponseEntity<?> getOldestDataAtualizacao() {
-    Optional<Candidatos> candidateOpt = candidatosRepository.findTopByOrderByDataDaAtualizacaoAsc();
-    if (candidateOpt.isPresent()) {
-        LocalDateTime oldestData = candidateOpt.get().getDataDaAtualizacao();
-        // Retorna em formato JSON, ex: { "oldestData": "2025-02-18T14:15:53.841" }
-        return ResponseEntity.ok(Collections.singletonMap("oldestData", oldestData));
-    }
-    return ResponseEntity.ok(Collections.singletonMap("oldestData", null));
+        Optional<Candidatos> candidateOpt = candidatosRepository.findTopByOrderByDataDaAtualizacaoAsc();
+        if (candidateOpt.isPresent()) {
+            LocalDateTime oldestData = candidateOpt.get().getDataDaAtualizacao();
+            // Retorna em formato JSON, ex: { "oldestData": "2025-02-18T14:15:53.841" }
+            return ResponseEntity.ok(Collections.singletonMap("oldestData", oldestData));
+        }
+        return ResponseEntity.ok(Collections.singletonMap("oldestData", null));
     }
 
     @GetMapping("/candidatos/statistics")
     public ResponseEntity<?> getCandidatosStatistics() {
-    // Obtém o total de candidatos com trabalha = 'sim'
-    long totalTrabalhaSim = candidatosRepository.countByTrabalha("sim");
+        // Obtém o total de candidatos com trabalha = 'sim'
+        long totalTrabalhaSim = candidatosRepository.countByTrabalha("sim");
 
-    // Obtém o total de candidatos com trabalha = 'sim' e biometria = 'sim'
-    long totalTrabalhaSimBiometriaSim = candidatosRepository.countByTrabalhaAndBiometria("sim", "sim");
+        // Obtém o total de candidatos com trabalha = 'sim' e biometria = 'sim'
+        long totalTrabalhaSimBiometriaSim = candidatosRepository.countByTrabalhaAndBiometria("sim", "sim");
 
-    // Consulta os valores distintos de funcao e suas contagens
-    List<Object[]> funcoesRaw = candidatosRepository.countFuncaoGroupByFuncao();
-    List<Map<String, Object>> funcoes = new ArrayList<>();
-    for (Object[] row : funcoesRaw) {
-        Map<String, Object> map = new HashMap<>();
-        map.put("funcao", row[0]);  // valor do campo funcao
-        map.put("count", row[1]);   // quantidade de ocorrências
-        funcoes.add(map);
+        // Consulta os valores distintos de funcao e suas contagens
+        List<Object[]> funcoesRaw = candidatosRepository.countFuncaoGroupByFuncao();
+        List<Map<String, Object>> funcoes = new ArrayList<>();
+        for (Object[] row : funcoesRaw) {
+            Map<String, Object> map = new HashMap<>();
+            map.put("funcao", row[0]); // valor do campo funcao
+            map.put("count", row[1]); // quantidade de ocorrências
+            funcoes.add(map);
+        }
+
+        // Monta o objeto de resposta
+        Map<String, Object> response = new HashMap<>();
+        response.put("totalTrabalhaSim", totalTrabalhaSim);
+        response.put("totalTrabalhaSimBiometriaSim", totalTrabalhaSimBiometriaSim);
+        response.put("funcoes", funcoes);
+
+        return ResponseEntity.ok(response);
     }
-
-    // Monta o objeto de resposta
-    Map<String, Object> response = new HashMap<>();
-    response.put("totalTrabalhaSim", totalTrabalhaSim);
-    response.put("totalTrabalhaSimBiometriaSim", totalTrabalhaSimBiometriaSim);
-    response.put("funcoes", funcoes);
-
-    return ResponseEntity.ok(response);
-    }
-
 
 }
