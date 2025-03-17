@@ -2,11 +2,11 @@ package com.william.springsecurity.domain.ponto;
 
 import jakarta.persistence.*;
 
-import java.time.Duration;
 import java.time.LocalDate;
 import java.time.LocalTime;
+import java.time.format.TextStyle;
+import java.util.Locale;
 
-import com.william.springsecurity.domain.interno.Interno;
 
 @Entity
 @Table(name = "registro_ponto", uniqueConstraints = @UniqueConstraint(columnNames = {"funcionario_id", "dia"}))
@@ -22,9 +22,6 @@ public class RegistroPonto {
     @Column(name = "dia", nullable = false)
     private LocalDate dia;
 
-    @Column(name = "dia_semana", nullable = false)
-    private String diaSemana;
-
     // Quatro horários de batida do ponto:
     @Column(name = "entrada")
     private LocalTime entrada;
@@ -38,26 +35,8 @@ public class RegistroPonto {
     @Column(name = "saida")
     private LocalTime saida;
 
-    // Campo opcional para exibir o cálculo de horas trabalhadas (não persistido)
-    @Transient
-    private Duration horasTrabalhadas;
-
     @Column(name = "observacao")
     private String observacao;
-
-    @ManyToOne(optional = false)
-    @JoinColumn(name = "funcionario_id", nullable = false)
-    private Interno interno;
-
-    // Getter para Interno
-    public Interno getInterno() {
-        return interno;
-    }
-
-    // Setter para Interno (se necessário)
-    public void setInterno(Interno interno) {
-        this.interno = interno;
-    }
 
     // Construtor padrão
     public RegistroPonto() {}
@@ -66,7 +45,6 @@ public class RegistroPonto {
     public RegistroPonto(Long funcionarioId, LocalDate dia) {
         this.funcionarioId = funcionarioId;
         this.dia = dia;
-        this.diaSemana = dia.getDayOfWeek().toString();
     }
 
     // Getters e Setters
@@ -89,15 +67,6 @@ public class RegistroPonto {
 
     public void setDia(LocalDate dia) {
         this.dia = dia;
-        this.diaSemana = dia.getDayOfWeek().toString();
-    }
-
-    public String getDiaSemana() {
-        return diaSemana;
-    }
-
-    public void setDiaSemana(String diaSemana) {
-        this.diaSemana = diaSemana;
     }
 
     public LocalTime getEntrada() {
@@ -132,14 +101,6 @@ public class RegistroPonto {
         this.saida = saida;
     }
 
-    public Duration getHorasTrabalhadas() {
-        return horasTrabalhadas;
-    }    
-
-    public void setHorasTrabalhadas(Duration horasTrabalhadas) {
-        this.horasTrabalhadas = horasTrabalhadas;
-    }
-
     public String getObservacao() {
         return observacao;
     }
@@ -147,4 +108,9 @@ public class RegistroPonto {
     public void setObservacao(String observacao) {
         this.observacao = observacao;
     }
+
+    public String getDiaSemana() {
+        return this.dia.getDayOfWeek().getDisplayName(TextStyle.FULL, new Locale("pt", "BR"));
+    }
+    
 }

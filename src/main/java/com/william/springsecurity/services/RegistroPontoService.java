@@ -1,3 +1,4 @@
+
 package com.william.springsecurity.services;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -84,9 +85,7 @@ public RegistroPonto salvarOuAtualizarRegistro(Long funcionarioId, Interno inter
         registro = new RegistroPonto();
         registro.setFuncionarioId(funcionarioId);
         registro.setDia(data);
-        registro.setDiaSemana(data.getDayOfWeek().toString());
         registro.setEntrada(horario); // Primeiro horário registrado do dia
-        registro.setInterno(interno);
     }
 
     return registroPontoRepository.save(registro);
@@ -119,51 +118,9 @@ public RegistroPonto salvarOuAtualizarRegistro(Long funcionarioId, Interno inter
         LocalDate fim = inicio.with(TemporalAdjusters.lastDayOfMonth());
         
         List<RegistroPonto> registros = registroPontoRepository.findByFuncionarioIdAndDiaBetween(funcionarioId, inicio, fim);
-        
-        // Atualiza o campo horasTrabalhadas de acordo com as regras:
-        for (RegistroPonto registro : registros) {
-            Duration horas = calcularHorasTrabalhadasCustom(registro);
-            registro.setHorasTrabalhadas(horas);
-        }
-        
+         
         return registros;
     }
-    
-    /**
-     * Calcula as horas trabalhadas para um dia, conforme:
-     * - Se houver 2 ou 3 registros: retorna a diferença entre o primeiro e o segundo registro.
-     * - Se houver 4 registros: retorna (saidaAlmoco - entrada) + (saida - retornoAlmoco).
-     */
-    private Duration calcularHorasTrabalhadasCustom(RegistroPonto registro) {
-        List<LocalTime> pontos = new ArrayList<>();
-        
-        if (registro.getEntrada() != null) {
-            pontos.add(registro.getEntrada());
-        }
-        if (registro.getSaidaAlmoco() != null) {
-            pontos.add(registro.getSaidaAlmoco());
-        }
-        if (registro.getRetornoAlmoco() != null) {
-            pontos.add(registro.getRetornoAlmoco());
-        }
-        if (registro.getSaida() != null) {
-            pontos.add(registro.getSaida());
-        }
-        
-        // Se há pelo menos 2 registros, o cálculo é válido
-        if (pontos.size() >= 2) {
-            if (pontos.size() == 2 || pontos.size() == 3) {
-                // Para 2 ou 3 batidas, consideramos somente o intervalo entre o primeiro e o segundo ponto
-                return Duration.between(pontos.get(0), pontos.get(1));
-            } else if (pontos.size() == 4) {
-                Duration periodoManha = Duration.between(pontos.get(0), pontos.get(1));
-                Duration periodoTarde = Duration.between(pontos.get(2), pontos.get(3));
-                return periodoManha.plus(periodoTarde);
-            }
-        }
-        
-        return Duration.ZERO;
-    }    
     
     public String calcularHorasTrabalhadasFuncionarioMes(Long funcionarioId, int ano, int mes) {
     // Define o intervalo do mês
