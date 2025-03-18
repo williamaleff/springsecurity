@@ -53,7 +53,8 @@ public class RelatorioPontoService {
         dto.setCabecalho2("GOVERNO DO ESTADO");
         dto.setCabecalho3("SECRETARIA DA ADMINISTRAÇÃO");
         dto.setCabecalho4("PENITENCIÁRIA E RESSOCIALIZAÇÃO");
-        dto.setTitulo("Relatório de Frequência");
+        dto.setCabecalho5("UNIDADE PRISIONAL REGIONAL DE SOBRAL");
+        dto.setTitulo("FOLHA INDIVIDUAL DE FREQUÊNCIA  - REMIÇÃO");
 
         // Dados do candidato
         dto.setNome(candidato.getNome());

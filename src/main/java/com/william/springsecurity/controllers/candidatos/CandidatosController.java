@@ -249,7 +249,7 @@ public class CandidatosController {
      * Endpoint para buscar um candidato pelo prontuário.
      * Exemplo de URL: GET /planilha/candidatos/12345
      */
-    @GetMapping("/planilha/candidatos/{prontuario}")
+    @GetMapping("/candidatos/{prontuario}")
     public ResponseEntity<?> getCandidatoByProntuario(@PathVariable String prontuario) {
         Optional<Candidatos> optionalCandidato = candidatosRepository.findByProntuario(prontuario);
         if (optionalCandidato.isPresent()) {

@@ -73,15 +73,15 @@ public class PdfPontoController {
         if (funcionarioId != null) {
             RelatorioPontoDTO dto = relatorioPontoService.createRelatorioPontoDTO(funcionarioId, ano, mes);
 
-            // if (dto.getRegistrosPontos() == null || dto.getRegistrosPontos().isEmpty()) {
-            boolean hasAnyRecord = dto.getRegistrosPontos() != null &&
-                    dto.getRegistrosPontos().stream()
-                            .anyMatch(registro -> registro.getEntrada() != null ||
-                                    registro.getSaidaAlmoco() != null ||
-                                    registro.getRetornoAlmoco() != null ||
-                                    registro.getSaida() != null);
+             if (dto.getRegistrosPontos() == null || dto.getRegistrosPontos().isEmpty()) { //apagar para imprimir mesmo sem dados
+            // boolean hasAnyRecord = dto.getRegistrosPontos() != null &&
+            //         dto.getRegistrosPontos().stream()
+            //                 .anyMatch(registro -> registro.getEntrada() != null ||
+            //                         registro.getSaidaAlmoco() != null ||
+            //                         registro.getRetornoAlmoco() != null ||
+            //                         registro.getSaida() != null);
 
-            if (!hasAnyRecord) {
+            // if (!hasAnyRecord) {
                 try {
                     byte[] pdfBytes;
                     pdfBytes = gerarPdfSemRegistros(funcionarioId, dto.getAno(), dto.getMes(), dto.getProntuario(),
@@ -263,6 +263,8 @@ public class PdfPontoController {
         textParagraph.add(new Chunk(dto.getCabecalho3(), normalFont12));
         textParagraph.add(Chunk.NEWLINE);
         textParagraph.add(new Chunk(dto.getCabecalho4(), normalFont12));
+        textParagraph.add(Chunk.NEWLINE);
+        textParagraph.add(new Chunk(dto.getCabecalho5(), normalFont12));
         PdfPCell textCell = new PdfPCell(textParagraph);
         textCell.setVerticalAlignment(Element.ALIGN_CENTER);
         textCell.setHorizontalAlignment(Element.ALIGN_JUSTIFIED);

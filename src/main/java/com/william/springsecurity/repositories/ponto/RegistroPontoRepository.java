@@ -1,6 +1,8 @@
 package com.william.springsecurity.repositories.ponto;
 
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 
 import com.william.springsecurity.domain.ponto.RegistroPonto;
 
@@ -16,5 +18,9 @@ public interface RegistroPontoRepository extends JpaRepository<RegistroPonto, Lo
 
     // Novo método para filtrar por funcionário e intervalo de datas
     List<RegistroPonto> findByFuncionarioIdAndDiaBetween(Long funcionarioId, LocalDate inicio, LocalDate fim);
+
+    @Query("SELECT rp FROM RegistroPonto rp JOIN FETCH rp.interno WHERE rp.dia BETWEEN :inicio AND :fim")
+    List<RegistroPonto> findByDiaBetweenWithInterno(@Param("inicio") LocalDate inicio, @Param("fim") LocalDate fim);
+
 
 }

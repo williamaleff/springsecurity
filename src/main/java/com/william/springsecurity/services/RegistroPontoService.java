@@ -85,7 +85,9 @@ public RegistroPonto salvarOuAtualizarRegistro(Long funcionarioId, Interno inter
         registro = new RegistroPonto();
         registro.setFuncionarioId(funcionarioId);
         registro.setDia(data);
+        registro.setDiaSemana(data.getDayOfWeek().toString());
         registro.setEntrada(horario); // Primeiro horário registrado do dia
+        registro.setInterno(interno);
     }
 
     return registroPontoRepository.save(registro);

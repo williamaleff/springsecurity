@@ -15,6 +15,7 @@ public class RelatorioPontoDTO {
     private String cabecalho2;
     private String cabecalho3;
     private String cabecalho4;
+    private String cabecalho5;
     
     // Título do relatório
     private String titulo;
@@ -89,6 +90,14 @@ public class RelatorioPontoDTO {
         this.cabecalho4 = cabecalho4;
     }
 
+    public String getCabecalho5() {
+        return cabecalho5;
+    }
+
+    public void setCabecalho5(String cabecalho5) {
+        this.cabecalho5 = cabecalho5;
+    }
+
     public String getTitulo() {
         return titulo;
     }
@@ -152,6 +161,5 @@ public class RelatorioPontoDTO {
     public void setUnidade(String unidade) {
         this.unidade = unidade;
     }
-
     
 }
