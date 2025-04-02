@@ -15,7 +15,10 @@ public class Interno implements Serializable {
     private Long id;
     private String nome;
     private String prontuario;
+
+    @Column(columnDefinition = "TEXT")
     private String digital;
+    
     private String foto;
     private LocalDateTime dataDaAtualizacao;
     

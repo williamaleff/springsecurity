@@ -37,4 +37,7 @@ public interface CandidatosRepository extends JpaRepository<Candidatos, Long> {
     @Query("SELECT c.funcao, COUNT(c) FROM Candidatos c WHERE c.funcao IS NOT NULL GROUP BY c.funcao")
     List<Object[]> countFuncaoGroupByFuncao();
 
+    @Query("SELECT DISTINCT c.funcao FROM Candidatos c")
+    List<String> findDistinctFuncoes();
+
 }

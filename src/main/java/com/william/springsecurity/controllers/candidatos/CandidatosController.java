@@ -189,28 +189,28 @@ public class CandidatosController {
             }
 
             if (!isLayout2) {
-            // Agora, para os candidatos que NÃO foram atualizados via planilha, atualiza o
-            // campo "trabalha" para "nao".
-            // Se o candidato já tinha "sim", adiciona uma vírgula e o valor do mês/ano
-            // atual em "trabalhou".
-            List<Candidatos> todosCandidatos = candidatosRepository.findAll();
-            for (Candidatos cand : todosCandidatos) {
-                if (!prontuariosAtualizados.contains(cand.getProntuario())) {
-                    // Se o campo "trabalha" estava com "sim", acrescenta no "trabalhou"
-                    if ("sim".equalsIgnoreCase(cand.getTrabalha())) {
-                        String atual = cand.getTrabalhou();
-                        String novoValor = now.format(formatter);
-                        if (atual == null || atual.isEmpty()) {
-                            cand.setTrabalhou(novoValor);
-                        } else {
-                            cand.setTrabalhou(atual + "," + novoValor);
+                // Agora, para os candidatos que NÃO foram atualizados via planilha, atualiza o
+                // campo "trabalha" para "nao".
+                // Se o candidato já tinha "sim", adiciona uma vírgula e o valor do mês/ano
+                // atual em "trabalhou".
+                List<Candidatos> todosCandidatos = candidatosRepository.findAll();
+                for (Candidatos cand : todosCandidatos) {
+                    if (!prontuariosAtualizados.contains(cand.getProntuario())) {
+                        // Se o campo "trabalha" estava com "sim", acrescenta no "trabalhou"
+                        if ("sim".equalsIgnoreCase(cand.getTrabalha())) {
+                            String atual = cand.getTrabalhou();
+                            String novoValor = now.format(formatter);
+                            if (atual == null || atual.isEmpty()) {
+                                cand.setTrabalhou(novoValor);
+                            } else {
+                                cand.setTrabalhou(atual + "," + novoValor);
+                            }
                         }
+                        cand.setTrabalha("nao");
+                        candidatosRepository.save(cand);
                     }
-                    cand.setTrabalha("nao");
-                    candidatosRepository.save(cand);
                 }
             }
-        }
         } catch (IOException e) {
             e.printStackTrace();
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Erro ao processar o arquivo.");
@@ -295,6 +295,12 @@ public class CandidatosController {
         response.put("funcoes", funcoes);
 
         return ResponseEntity.ok(response);
+    }
+
+    @GetMapping("/candidatos/funcoes")
+    public ResponseEntity<List<String>> getCandidatosFuncoes() {
+        List<String> funcoes = candidatosRepository.findDistinctFuncoes();
+        return ResponseEntity.ok(funcoes);
     }
 
 }

@@ -3,7 +3,6 @@ package com.william.springsecurity.controllers.ponto;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
@@ -154,11 +153,24 @@ public class RegistroPontoController {
     @GetMapping("/registros/mes/excel")
     public ResponseEntity<byte[]> gerarExcelMes(
             @RequestParam int ano,
-            @RequestParam int mes) {
+            @RequestParam int mes,
+            @RequestParam(required = false) String funcao) {
 
         // Obtém os registros agrupados por funcionário para o mês informado
         Map<Long, List<RegistroPonto>> registrosAgrupados = registroPontoService
                 .listarRegistrosAgrupadosPorFuncionarioMes(ano, mes);
+
+         // Se o parâmetro 'funcao' foi informado, filtra os registros de cada funcionário
+    // if (funcao != null && !funcao.trim().isEmpty()) {
+    //     registrosAgrupados.forEach((funcionarioId, registros) -> {
+    //         List<RegistroPonto> filtrados = registros.stream()
+    //                 .filter(rp -> rp.getFuncao() != null && rp.getFuncao().equalsIgnoreCase(funcao))
+    //                 .collect(Collectors.toList());
+    //         registros.clear();
+    //         registros.addAll(filtrados);
+    //     });
+    // }        
+
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
 
         try (Workbook workbook = new XSSFWorkbook()) {

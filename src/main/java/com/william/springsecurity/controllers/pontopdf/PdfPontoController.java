@@ -66,6 +66,7 @@ public class PdfPontoController {
     @GetMapping("/ponto/registros/funcionario/pdf")
     public ResponseEntity<byte[]> gerarPdfRegistroFuncionario(
             @RequestParam(required = false) Long funcionarioId,
+            @RequestParam(required = false) String funcao,
             @RequestParam int ano,
             @RequestParam int mes) {
 
@@ -122,6 +123,13 @@ public class PdfPontoController {
                 }
 
                 for (Candidatos candidato : candidatos) {
+                    //acionado quando existe funcao
+                    if(funcao != null && !funcao.trim().isEmpty()){
+                        if(candidato.getFuncao() == null || !candidato.getFuncao().equalsIgnoreCase(funcao.trim())){
+                            continue;
+                        }
+                    }
+
                     Interno interno = internoRepository.findByProntuario(candidato.getProntuario())
                             .orElse(null);
                     if (interno == null)
@@ -134,6 +142,13 @@ public class PdfPontoController {
                 // Mês histórico: busca candidatos cujo campo "trabalhou" não é nulo
                 List<Candidatos> candidatos = candidatosRepository.findByTrabalhouIsNotNull();
                 for (Candidatos candidato : candidatos) {
+                    //acionado quando existe funcao
+                    if(funcao != null && !funcao.trim().isEmpty()){
+                        if(candidato.getFuncao() == null || !candidato.getFuncao().equalsIgnoreCase(funcao.trim())){
+                            continue;
+                        }
+                    }
+
                     Optional<Interno> optionalInterno = internoRepository.findByProntuario(candidato.getProntuario());
                     if (!optionalInterno.isPresent())
                         continue;
