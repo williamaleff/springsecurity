@@ -160,54 +160,44 @@ public class RegistroPontoController {
         Map<Long, List<RegistroPonto>> registrosAgrupados = registroPontoService
                 .listarRegistrosAgrupadosPorFuncionarioMes(ano, mes);
 
-         // Se o parâmetro 'funcao' foi informado, filtra os registros de cada funcionário
-    // if (funcao != null && !funcao.trim().isEmpty()) {
-    //     registrosAgrupados.forEach((funcionarioId, registros) -> {
-    //         List<RegistroPonto> filtrados = registros.stream()
-    //                 .filter(rp -> rp.getFuncao() != null && rp.getFuncao().equalsIgnoreCase(funcao))
-    //                 .collect(Collectors.toList());
-    //         registros.clear();
-    //         registros.addAll(filtrados);
-    //     });
-    // }        
-
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
 
         try (Workbook workbook = new XSSFWorkbook()) {
-            // Para cada funcionário, cria uma nova planilha
-            for (Map.Entry<Long, List<RegistroPonto>> entry : registrosAgrupados.entrySet()) {
-                Long funcionarioId = entry.getKey();
-                List<RegistroPonto> registros = entry.getValue();
-
-                // Cria uma planilha com o nome "Funcionario {id}"
-                Sheet sheet = workbook.createSheet("Funcionario " + funcionarioId);
+            
+                 // Cria uma única planilha
+                Sheet sheet = workbook.createSheet("Registros");
 
                 // Cria a linha de cabeçalho
-                Row headerRow = sheet.createRow(0);
-                headerRow.createCell(0).setCellValue("ID");
-                headerRow.createCell(1).setCellValue("Data");
-                headerRow.createCell(2).setCellValue("Dia Semana");
-                headerRow.createCell(3).setCellValue("Entrada");
-                headerRow.createCell(4).setCellValue("Saída Almoço");
-                headerRow.createCell(5).setCellValue("Retorno Almoço");
-                headerRow.createCell(6).setCellValue("Saída");
-                headerRow.createCell(7).setCellValue("Observação");
+        Row headerRow = sheet.createRow(0);
+        headerRow.createCell(0).setCellValue("Funcionário ID");
+        headerRow.createCell(1).setCellValue("ID");
+        headerRow.createCell(2).setCellValue("Data");
+        headerRow.createCell(3).setCellValue("Dia Semana");
+        headerRow.createCell(4).setCellValue("Entrada");
+        headerRow.createCell(5).setCellValue("Saída Almoço");
+        headerRow.createCell(6).setCellValue("Retorno Almoço");
+        headerRow.createCell(7).setCellValue("Saída");
+        headerRow.createCell(8).setCellValue("Observação");
 
                 // Insere os registros na planilha
                 int rowIdx = 1;
+                for (Map.Entry<Long, List<RegistroPonto>> entry : registrosAgrupados.entrySet()) {
+                Long funcionarioId = entry.getKey();
+                List<RegistroPonto> registros = entry.getValue();
+            
                 for (RegistroPonto rp : registros) {
                     Row row = sheet.createRow(rowIdx++);
-                    row.createCell(0).setCellValue(rp.getId() != null ? rp.getId() : 0);
-                    row.createCell(1).setCellValue(rp.getDia() != null ? rp.getDia().toString() : "");
-                    row.createCell(2).setCellValue(rp.getDiaSemana() != null ? rp.getDiaSemana() : "");
-                    row.createCell(3).setCellValue(rp.getEntrada() != null ? rp.getEntrada().toString() : "");
-                    row.createCell(4).setCellValue(rp.getSaidaAlmoco() != null ? rp.getSaidaAlmoco().toString() : "");
-                    row.createCell(5)
-                            .setCellValue(rp.getRetornoAlmoco() != null ? rp.getRetornoAlmoco().toString() : "");
-                    row.createCell(6).setCellValue(rp.getSaida() != null ? rp.getSaida().toString() : "");
-                    row.createCell(7).setCellValue(rp.getObservacao() != null ? rp.getObservacao() : "");
-                }
+                row.createCell(0).setCellValue(funcionarioId);
+                row.createCell(1).setCellValue(rp.getId() != null ? rp.getId() : 0);
+                row.createCell(2).setCellValue(rp.getDia() != null ? rp.getDia().toString() : "");
+                row.createCell(3).setCellValue(rp.getDiaSemana() != null ? rp.getDiaSemana() : "");
+                row.createCell(4).setCellValue(rp.getEntrada() != null ? rp.getEntrada().toString() : "");
+                row.createCell(5).setCellValue(rp.getSaidaAlmoco() != null ? rp.getSaidaAlmoco().toString() : "");
+                row.createCell(6).setCellValue(rp.getRetornoAlmoco() != null ? rp.getRetornoAlmoco().toString() : "");
+                row.createCell(7).setCellValue(rp.getSaida() != null ? rp.getSaida().toString() : "");
+                row.createCell(8).setCellValue(rp.getObservacao() != null ? rp.getObservacao() : "");                
             }
+        }
             workbook.write(baos);
         } catch (IOException e) {
             e.printStackTrace();

@@ -17,4 +17,6 @@ public interface InternoRepository extends JpaRepository<Interno, Long> {
 
     Optional<Interno> findByProntuario(String prontuario);
 
+    List<Interno> findByProntuarioIn(List<String> prontuarios);
+
 }

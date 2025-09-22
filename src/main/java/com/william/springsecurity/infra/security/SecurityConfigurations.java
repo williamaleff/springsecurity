@@ -37,12 +37,15 @@ public class SecurityConfigurations {
                         .requestMatchers(HttpMethod.POST, "/auth/login").permitAll()
                         .requestMatchers(HttpMethod.POST, "/api/verifyFingerprint").permitAll()
                         .requestMatchers(HttpMethod.GET, "/uploads/{fileName}").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/swagger-ui/*").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/v3/api-docs/*").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/v3/*").permitAll()
                         .requestMatchers(HttpMethod.POST, "/auth/register").hasRole("ADMIN")
                         .requestMatchers(HttpMethod.POST, "/product").hasRole("ADMIN")
                         .anyRequest().authenticated()
                 ).cors(cors -> cors.configurationSource(request -> {
                     var corsConfig = new CorsConfiguration();
-                    corsConfig.setAllowedOrigins(Collections.singletonList("http://localhost:5173")); // substitua pelo(s) domínio(s) permitido(s)
+                    corsConfig.setAllowedOrigins(Collections.singletonList("http://localhost,http://192.168.14.53,http://remicao.sap.ce.gov.br,https://remicao.sap.ce.gov.br,http://localhost:5173")); // substitua pelo(s) domínio(s) permitido(s)
                     corsConfig.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS"));
                     corsConfig.setAllowedHeaders(Arrays.asList("*"));
                     corsConfig.setExposedHeaders(Arrays.asList("x-total-count")); 

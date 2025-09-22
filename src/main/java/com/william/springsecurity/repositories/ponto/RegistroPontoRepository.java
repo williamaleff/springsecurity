@@ -22,5 +22,6 @@ public interface RegistroPontoRepository extends JpaRepository<RegistroPonto, Lo
     @Query("SELECT rp FROM RegistroPonto rp JOIN FETCH rp.interno WHERE rp.dia BETWEEN :inicio AND :fim")
     List<RegistroPonto> findByDiaBetweenWithInterno(@Param("inicio") LocalDate inicio, @Param("fim") LocalDate fim);
 
+    List<RegistroPonto> findByFuncionarioIdInAndDiaBetween(List<Long> funcionarioIds, LocalDate inicio, LocalDate fim);
 
 }
